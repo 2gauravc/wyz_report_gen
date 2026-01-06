@@ -95,30 +95,28 @@ def render_html_for_first_n(df_out: pd.DataFrame, template_path: str, out_dir: s
 			out_f.write(template.render(**ctx))
 
 
-def convert_htmls_to_pdfs(out_dir: str, wkhtmltopdf_path: str | None = None) -> None:
-	"""Convert all .html files in out_dir to .pdf using wkhtmltopdf.
+def convert_htmls_to_pdfs(html_out_dir: str, pdf_out_dir: str, wkhtmltopdf_path: str | None = None) -> None:
+    """Convert all .html files in html_out_dir to .pdf using wkhtmltopdf and write PDFs to pdf_out_dir."""
+    if wkhtmltopdf_path is None:
+        wkhtmltopdf_path = shutil.which('wkhtmltopdf')
+    if not wkhtmltopdf_path:
+        raise FileNotFoundError('wkhtmltopdf not found on PATH; please install it (apt-get install wkhtmltopdf)')
 
-	If wkhtmltopdf_path is None, the function will attempt to find `wkhtmltopdf` on PATH.
-	"""
-	if wkhtmltopdf_path is None:
-		wkhtmltopdf_path = shutil.which('wkhtmltopdf')
-	if not wkhtmltopdf_path:
-		raise FileNotFoundError('wkhtmltopdf not found on PATH; please install it (apt-get install wkhtmltopdf)')
+    html_files = sorted(glob.glob(os.path.join(html_out_dir, '*.html')))
+    if not html_files:
+        print(f'No HTML files found in {html_out_dir} to convert.')
+        return
 
-	html_files = sorted(glob.glob(os.path.join(out_dir, '*.html')))
-	if not html_files:
-		print(f'No HTML files found in {out_dir} to convert.')
-		return
+    os.makedirs(pdf_out_dir, exist_ok=True)
 
-	for html in html_files:
-		pdf_path = os.path.splitext(html)[0] + '.pdf'
-		try:
-			subprocess.run([wkhtmltopdf_path, html, pdf_path], check=True)
-			print(f'Converted: {html} -> {pdf_path}')
-		except subprocess.CalledProcessError as e:
-			print(f'Error converting {html}: {e}')
-
-
+    for html in html_files:
+        pdf_fname = os.path.splitext(os.path.basename(html))[0] + '.pdf'
+        pdf_path = os.path.join(pdf_out_dir, pdf_fname)
+        try:
+            subprocess.run([wkhtmltopdf_path, html, pdf_path], check=True)
+            print(f'Converted: {html} -> {pdf_path}')
+        except subprocess.CalledProcessError as e:
+            print(f'Error converting {html}: {e}')
 
 def process(input_csv: str, output_csv: str) -> pd.DataFrame:
 	df = pd.read_csv(input_csv)
@@ -204,11 +202,12 @@ def process(input_csv: str, output_csv: str) -> pd.DataFrame:
 
 def main(argv: Optional[list] = None):
 	parser = argparse.ArgumentParser(description='Generate ChairSquats1min report per student.')
-	parser.add_argument('input', nargs='?', default='Master 6th class_V1.xlsx - Sheet1.csv', help='Input CSV file')
-	parser.add_argument('-o', '--output', default='report_output.csv', help='Output CSV file')
+	parser.add_argument('input', nargs='?', default='input_data/master_6th_class.csv', help='Input CSV file')
+	parser.add_argument('-o', '--output', default='out_csv/report_output.csv', help='Output CSV file')
 	parser.add_argument('--render-html', action='store_true', help='Render HTML reports for first N students using template')
 	parser.add_argument('--template', default='report_template.html', help='HTML template path')
-	parser.add_argument('--outdir', default='out_html', help='Output directory for generated HTML files')
+	parser.add_argument('--html-outdir', default='out_html', help='Output directory for generated HTML files')
+	parser.add_argument('--pdf-outdir', default='out_pdf', help='Output directory for generated PDF files')
 	parser.add_argument('--to-pdf', action='store_true', help='Convert generated HTML reports to PDF using wkhtmltopdf')
 	parser.add_argument('--limit', type=int, default=10, help='Number of students to render')
 
@@ -218,12 +217,12 @@ def main(argv: Optional[list] = None):
 		df_out = process(args.input, args.output)
 		print(f"Wrote report to {args.output}")
 		if args.render_html:
-			render_html_for_first_n(df_out, args.template, args.outdir, 10)
-			print(f"Rendered HTML reports to {args.outdir}")
+			render_html_for_first_n(df_out, args.template, args.html_outdir, 10)
+			print(f"Rendered HTML reports to {args.html_outdir}")
 		if args.to_pdf:
 			# convert HTML files in outdir to PDF using wkhtmltopdf
 			try:
-				convert_htmls_to_pdfs(args.outdir)
+				convert_htmls_to_pdfs(args.html_outdir, args.pdf_outdir)
 			except FileNotFoundError as e:
 				print(str(e), file=sys.stderr)
 				sys.exit(3)
