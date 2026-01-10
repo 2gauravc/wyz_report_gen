@@ -10,26 +10,17 @@ sudo apt-get update && sudo apt-get install -y wkhtmltopdf
 python3 report.py input_data/master_6th_class.csv -o out_csv/report_output.csv --render-html --template report_template.html --html-outdir out_html --pdf-outdir out_pdf --limit 10 --to-pdf
 ```
 
-# Business Logic 
+# Observed Metric and Reporting Logic 
 
-## Step 1: Compute the cohort averages 
-
-Metrics: 
-1. MaximumChairSquats60seconds - (Count)
-2. MaximumMedicineBallPress60seconds - (Count)
-3. StandingBroadJumpDistance - (Distance in m)
-4. SeatedMedicineBallThrowDistance(2kg) - (Distance in m)
-5. 20mRunningTime(20m) - (Time is seconds)
-6. ProAgilityTime - (Time in seconds)
-7. ActiveStraightLegRaise(SLR) - (?)
-8. ShoulderMobility - (?)
-9. BalanceOneLegTimeLeft_EyesOpen - (Time in seconds, max 30)
-10. BalanceOneLegTimeRight_EyesOpen - (Time in seconds max 30)
-11. BalanceOneLegTimeLeft_EyesClosed - (Time in seconds max 30)
-12. BalanceOneLegTimeRight_EyesClosed - (Time in seconds max 30)
-
-For each metric: 
-Average - By Gender 
-80th Percentile - By Gender 
-Best - By Gender 
-20th, 40th, 60th, 80th percentile - By Gender 
+| Category        | Report Metric               | Short Name | Observation Specifics                                                   | Dimensions             | Derivation                                                         |   |
+|-----------------|-----------------------------|------------|-------------------------------------------------------------------------|------------------------|--------------------------------------------------------------------|---|
+| Strength        | Maximum Chair Squats        |            | Observation: Count Time Limit: 60s                                      | Gender,  Class (Grade) | Avg, 80th Percentile, Best Score (1-5) based on min-max range bins |   |
+|                 | Maximum Medicine Ball Press | OHMBP      | Observation: Count Time Limit: 60s                                      | Gender,  Class (Grade) | Avg, 80th Percentile, Best Score (1-5) based on min-max range bins |   |
+| Power           | Standard Broad Jump         | SBJ        | Observation: Distance (m)                                               | Gender,  Class (Grade) | Avg, 80th Percentile, Best Score (1-5) based on min-max range bins |   |
+|                 | Seated Medicine Ball Throw  | SMBT       | Observation: Distance (m) Ball Weight : 2 kgs                           | Gender,  Class (Grade) | Avg, 80th Percentile, Best Score (1-5) based on min-max range bins |   |
+| Speed & Agility | Max Running Speed           |            | Observation: Time (s) Distance: 20m                                     | Gender,  Class (Grade) | Avg, 80th Percentile, Best Score (1-5) based on min-max range bins |   |
+|                 | Pro Agility                 |            | Observation: Time (s)                                                   | Gender,  Class (Grade) | Avg, 80th Percentile, Best Score (1-5) based on min-max range bins |   |
+| Flexibility     | Active Straight Leg Raise)  | SLR        | Measure both Left and Right  Grade according to FMS grading scale (1-3) | Gender,  Class (Grade) | Measure: Worse (lower) of Left, Right  Avg, Best                   |   |
+|                 | Shoulder Mobility           |            | Measure both Left and Right  Grade according to FMS grading scale (1-3) | Gender,  Class (Grade) | Measure: Worse (lower) of Left, Right  Avg, Best                   |   |
+| Balance         | Balance - Eyes Closed       |            | Observation: Time (s)                                                   | NA                     | Measure: Worse (lower) of Left, Right  Avg, Best                   |   |
+|                 | Balance - Eyes Open         |            |                                                                         | NA                     | Measure: Worse (lower) of Left, Right  Avg, Best                   |   |
