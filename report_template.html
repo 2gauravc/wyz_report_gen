@@ -85,7 +85,7 @@
             <td class="meta-value">{{ weight }}</td>
           </tr>
           <tr>
-            <td class="meta-label">Data as recorded on:</td>
+            <td class="meta-label">Date:</td>
             <td class="meta-value">{{ date }}</td>
           </tr>
         </table>
@@ -254,9 +254,9 @@
         <tr>
           <th style="width:6%;">#</th>
           <th style="width:40%;">Criteria</th>
-          <th style="width:8%;">Measure (1-3)</th>
+          <th style="width:8%;">Measure (seconds)</th>
           <th style="width:8%;">Class Average</th>
-          <th style="width:8%;">% with 3 measure </th>
+          <th style="width:8%;">80th percentile </th>
           <th style="width:8%;">Best Measure in your Class</th>
           <th style="width:10%;">Your Score (out of 5)</th>
         </tr>
@@ -264,17 +264,17 @@
       <tbody>
         <tr>
           <td>4.1</td>
-          <td class="measure-left">Balance by standing on one Leg for 30seconds with eyes open</td>
+          <td class="measure-left">Balance by standing on one leg with eyes open. Max 30 seconds</td>
           <td>{{ baleyesopen_measure }}</td>
           <td>{{ baleyesopen_avg }}</td>
-          <td>{{ baleyesopen_pct_3 }}</td>
+          <td>{{ baleyesopen_p }}</td>
           <td>{{ baleyesopen_best }}</td>
           <td>{{ baleyesopen_score }}</td>
         </tr>
       </tbody>
     </table>    
 
-    <div class="footer-note">PS: Due to an injury, some tests were not performed. To stand and maintain balance on one leg for a maximum 30 seconds. Children with better balance are less likely to experience injuries related to falls or awkward movements.</div>
+    <div class="footer-note"> Children with better balance are less likely to experience injuries related to falls or awkward movements.</div>
   </div>
 </body>
 </html>

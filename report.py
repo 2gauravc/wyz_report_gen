@@ -38,7 +38,7 @@ def add_group_stats(
     grp = df.groupby(group_cols)[value_col]
 
     # average
-    df[f"{value_col}_avg"] = grp.transform("mean")
+    df[f"{value_col}_avg"] = grp.transform("mean").round(1)
 
     # percentile logic
     p = percentile if better == "higher" else 100 - percentile
@@ -49,7 +49,7 @@ def add_group_stats(
             if x.dropna().size > 0
             else np.nan
         )
-    )
+    ).round()
     #print ("added percentile") #add value also 
     # best
     best_fn = "max" if better == "higher" else "min"
@@ -112,14 +112,17 @@ def render_html_for_first_n(df_out: pd.DataFrame, template_path: str, out_dir: s
         # map many possible column names to the template variables
         ctx = {
             'logo_url': "file:///workspaces/codespaces-blank/wdyrz/images/wyrz_logo.svg",
-            'school_name': row.get('schoolname', 'EklavyaSchoolAhmedabad'),
+            'school_name': row.get('schoolname', 'EklavyaSchool, Ahmedabad'),
             'name': row.get('name', ''),
             'height': row.get('height', ''),
             'fitness_score': row.get('fitnessscore', ''),
             'class': row.get('class', ''),
             'gender': row.get('gender', ''),
             'weight': row.get('weight', ''),
-            'recorded_date': row.get('date', '01.01.2026'),
+            'date': (
+                    row.get('date')
+                    if pd.notna(row.get('date'))
+                    else '01.01.2026'),
 
             # STRENGTH
             ## Chair squat
@@ -171,14 +174,14 @@ def render_html_for_first_n(df_out: pd.DataFrame, template_path: str, out_dir: s
             ## Straight Leg Raise (SLR)
             'slr_measure': row.get('slr', ''),
             'slr_avg': row.get('slr_avg', ''),
-            'slr_p': row.get('slr_p' ,''),
+            'slr_pct_3': row.get('slr_pct_3' ,''),
             'slr_best': row.get('slr_best', ''),
             'slr_score': row.get('slr_score', ''),
 
             ## Shoulder Mobility
             'shouldermob_measure': row.get('shouldermob', ''),
             'shouldermob_avg': row.get('shouldermob_avg', ''),
-            'shouldermob_p': row.get('shouldermob_p' ,''),
+            'shouldermob_pct_3': row.get('shouldermob_pct_3' ,''),
             'shouldermob_best': row.get('shouldermob_best', ''),
             'shouldermob_score': row.get('shouldermob_score', ''),
 
@@ -188,7 +191,8 @@ def render_html_for_first_n(df_out: pd.DataFrame, template_path: str, out_dir: s
             # BALANCE 
             'baleyesopen_measure': row.get('baleyesopen', ''),
             'baleyesopen_avg': row.get('baleyesopen_avg', ''),
-            'baleyesopen_pct_3': row.get('baleyesopen_pct_3', ''),
+            'baleyesopen_p': row.get('baleyesopen_p', ''),
+            'baleyesopen_best': row.get('baleyesopen_best', ''),
             'baleyesopen_score': row.get('baleyesopen_score', ''),
 
             ## Comments 
@@ -310,14 +314,38 @@ def process(input_csv: str, output_csv: str) -> pd.DataFrame:
 
 
     ## Find how many columns were not found (None) 
-    missing_cols = sum(1 for col in [sr_col, name_col, class_col, gender_col, height_col, weight_col,
-                                      chairsquat_col, ohmbp_col, sbj_col, smbt_col,
-                                      runspeed_col, proagility_col,
-                                      slr_left_col, slr_right_col,
-                                      shouldermob_left_col, shouldermob_right_col,
-                                      baleyesopen_left_col, baleyesopen_right_col,
-                                      comments_col] if col is None)
-    print("Did not find {} expected columns; proceeding with available data.".format(missing_cols)) 
+    expected_cols = {
+    "sr": sr_col,
+    "name": name_col,
+    "class": class_col,
+    "gender": gender_col,
+    "height": height_col,
+    "weight": weight_col,
+    "chairsquat": chairsquat_col,
+    "ohmbp": ohmbp_col,
+    "sbj": sbj_col,
+    "smbt": smbt_col,
+    "runspeed": runspeed_col,
+    "proagility": proagility_col,
+    "slr_left": slr_left_col,
+    "slr_right": slr_right_col,
+    "shouldermob_left": shouldermob_left_col,
+    "shouldermob_right": shouldermob_right_col,
+    "baleyesopen_left": baleyesopen_left_col,
+    "baleyesopen_right": baleyesopen_right_col,
+    "comments": comments_col,
+    }
+
+
+    missing_cols = [name for name, col in expected_cols.items() if col is None]
+    missing_count = len(missing_cols)
+    if missing_cols:
+        print(
+            f"Missing columns ({missing_count}): "
+            + ", ".join(missing_cols)
+            )
+    else:
+        print("No missing columns 🎉")
 
     
     # Compute aggregate statistics (Class, Gender) for 
@@ -378,35 +406,37 @@ def process(input_csv: str, output_csv: str) -> pd.DataFrame:
 
     ## Straight Leg Raise (SLR). Ordinal scores (1,2,3)
     grp = work.groupby(["grade", "gender"])["slr"]
-    work["slr_avg"] = grp.transform("mean")
+    work["slr_avg"] = grp.transform("mean").round(1)
     work["slr_pct_3"] = grp.transform(
-    lambda x: (x == 3).mean() * 100)
+    lambda x: (x == 3).mean() * 100).round(0)
     work["slr_best"] = grp.transform("max")
     score_map = {1: 1, 2: 3, 3: 5}
     work["slr_score"] = work["slr"].map(score_map)
 
     ## Shoulder Mobility
     grp = work.groupby(["grade", "gender"])["shouldermob"]
-    work["shouldermob_avg"] = grp.transform("mean")
+    work["shouldermob_avg"] = grp.transform("mean").round(1)
     work["shouldermob_pct_3"] = grp.transform(
-    lambda x: (x == 3).mean() * 100)
+    lambda x: (x == 3).mean() * 100).round(0)
     score_map = {1: 1, 2: 3, 3: 5}
+    
     work["shouldermob_best"] = grp.transform("max")
     work["shouldermob_score"] = work["shouldermob"].map(score_map)
 
     # Balance - Eyes Open 
-    grp = work.groupby(["grade", "gender"])["baleyesopen"]
-    work["baleyesopen_avg"] = grp.transform("mean")
-    work["baleyesopen_pct_3"] = grp.transform(
-    lambda x: (x == 3).mean() * 100)
-    work["baleyesopen_best"] = grp.transform("max")
-    work["baleyesopen_score"] = pd.cut(
-        work["baleyesopen"],
+    add_group_stats(
+    work,
+    value_col="baleyesopen",
+    group_cols=["grade", "gender"],
+    score_fn=lambda x: pd.cut(
+        x,
         bins=[0, 6, 12, 18, 24, 30],
         labels=[1, 2, 3, 4, 5],
         right=True
-        ).astype("float")
-
+        ).astype("float"),
+    better="higher",
+    percentile=80)
+        
     # Create a combined fitness total (sum of available scores)
     score_cols = ['chairsquat_score', 'ohmbp_score', 'sbj_score', 'smbt_score', 'runspeed_score', 'proagility_score', 'slr_score', 'shouldermob_score']
 
@@ -433,7 +463,7 @@ def process(input_csv: str, output_csv: str) -> pd.DataFrame:
     "slr", "slr_avg", "slr_pct_3", "slr_best", "slr_score", 
     "shouldermob", "shouldermob_avg", "shouldermob_pct_3", "shouldermob_best", "shouldermob_score", 
     "fitnessscore",
-    "baleyesopen", "baleyesopen_avg", "baleyesopen_pct_3", "baleyesopen_best", "baleyesopen_score",
+    "baleyesopen", "baleyesopen_avg", "baleyesopen_p", "baleyesopen_best", "baleyesopen_score",
     "comments"]
     
     # Some columns may not exist; filter to existing ones
