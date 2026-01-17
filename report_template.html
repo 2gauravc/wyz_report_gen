@@ -5,118 +5,276 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Individual Fitness Testing & Assessment</title>
   <style>
-    body { font-family: Arial, Helvetica, sans-serif; color: #111; margin: 20px; }
-    .header { display:flex; align-items:center; justify-content:space-between; }
-    .logo { width:120px; }
-    h1 { text-align:center; font-size:28px; margin:6px 0 18px 0; }
-    .meta-table, .strength-table { width:100%; border-collapse:collapse; margin:10px 0 20px 0; }
-    .meta-table td { border:2px solid #000; padding:10px; vertical-align:middle; }
-    .meta-left { width:65%; }
-    .meta-right { width:35%; }
-    .meta-label { font-weight:700; width:120px; }
-    .section-title { text-align:center; font-weight:700; color:#0b3b5f; margin-top:30px; margin-bottom:8px; }
-    .strength-table th, .strength-table td { border:2px solid #000; padding:8px; text-align:center; }
-    .strength-table th { background:#fff; }
+    body { font-family: Arial, Helvetica, sans-serif; color: #111; margin: 18px; }
+    .page { max-width: 900px; margin: 0 auto; }
+    .top-row { display:flex; align-items:center; gap:12px; }
+    .logo { width:84px; height:auto; }
+    .title-wrap { flex:1; text-align:center; }
+    .school-line { font-size:16px; font-weight:700; margin-top:6px; }
+    h1 { margin:4px 0 8px 0; font-size:20px; letter-spacing:0.6px; }
+    .meta-box { border:2px solid #000; display:flex; gap:12px; padding:8px; margin-top:8px; }
+    .meta-left, .meta-right { width:50%; }
+    .meta-inner { width:100%; border-collapse:collapse; }
+    .meta-inner td { border:1px solid #000; padding:8px; vertical-align:middle; }
+    .meta-label { width:150px; font-weight:700; padding-left:6px; background:#fff; }
+    .meta-value { font-weight:700; }
+
+    .section-title { text-align:center; font-weight:700; color:#0b3b5f; margin-top:20px; margin-bottom:6px; font-size:14px; }
+    .table { width:100%; border-collapse:collapse; margin-bottom:6px; }
+    .table th, .table td { border:2px solid #000; padding:8px; text-align:center; font-size:13px; }
+    .table th { background:#fff; font-weight:700; }
     .measure-left { text-align:left; padding-left:12px; }
-    .small-note { font-style:italic; margin-top:8px; }
+    .small-note { font-style:italic; margin-top:6px; font-size:12px; }
+
+    .two-col { display:flex; gap:12px; margin-top:8px; }
+    .col { flex:1; }
+    .boxed { border:2px solid #000; padding:8px; }
+
+    .footer-note { margin-top:8px; font-size:12px; font-style:italic; }
+    .score-total { font-weight:700; padding:8px; text-align:right; }
+    .no-wrap { white-space:nowrap; }
   </style>
 </head>
 <body>
-
-  <div class="header">
-    <div style="display:flex;align-items:center;gap:12px;">
-      <img class="logo" src="{{ logo_url | default('') }}" alt="Logo" onerror="this.style.display='none'" />
+  <div class="page">
+    <div class="top-row">
+      <div style="width:120px;">
+        <img class="logo" src="{{ logo_url | default('') }}" alt="Logo" onerror="this.style.display='none'" />
+      </div>
+      <div class="title-wrap">
+        <h1>Individual Fitness Testing &amp; Assessment</h1>
+        <div class="school-line">{{ school_name }}</div>
+      </div>
+      <div style="width:120px;"></div>
     </div>
-    <div style="flex:1"></div>
-  </div>
 
-  <h1>Individual Fitness Testing &amp; Assessment</h1>
-
-  <table class="meta-table">
-    <tr>
-      <td class="meta-left">
-        <table style="width:100%; border-collapse:collapse;">
+    <div class="meta-box" role="group" aria-label="Student meta">
+      <div class="meta-left">
+        <table class="meta-inner">
           <tr>
             <td class="meta-label">School Name:</td>
-            <td style="font-weight:700;">{{ school_name }}</td>
+            <td class="meta-value">{{ school_name }}</td>
           </tr>
           <tr>
             <td class="meta-label">Name :</td>
-            <td style="font-weight:700;">{{ name }}</td>
+            <td class="meta-value">{{ name }}</td>
           </tr>
           <tr>
             <td class="meta-label">Height:</td>
-            <td style="font-weight:700;">{{ height }}</td>
+            <td class="meta-value">{{ height }}</td>
           </tr>
           <tr>
             <td class="meta-label">Fitness Score:</td>
-            <td style="font-weight:700;">{{ fitness_score }}</td>
+            <td class="meta-value">{{ fitnessscore }}</td>
           </tr>
         </table>
-      </td>
-      <td class="meta-right">
-        <table style="width:100%; border-collapse:collapse;">
+      </div>
+
+      <div class="meta-right">
+        <table class="meta-inner">
           <tr>
             <td class="meta-label">Class :</td>
-            <td style="font-weight:700;">{{ class_name }}</td>
+            <td class="meta-value">{{ class }}</td>
           </tr>
           <tr>
             <td class="meta-label">Gender:</td>
-            <td style="font-weight:700;">{{ gender }}</td>
+            <td class="meta-value">{{ gender }}</td>
           </tr>
           <tr>
             <td class="meta-label">Weight:</td>
-            <td style="font-weight:700;">{{ weight }}</td>
+            <td class="meta-value">{{ weight }}</td>
           </tr>
           <tr>
             <td class="meta-label">Data as recorded on:</td>
-            <td style="font-weight:700;">{{ recorded_date }}</td>
+            <td class="meta-value">{{ date }}</td>
           </tr>
         </table>
-      </td>
-    </tr>
-  </table>
+      </div>
+    </div>
 
-  <div class="section-title">STRENGTH</div>
+    <div class="section-title">STRENGTH</div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="width:6%;">#</th>
+          <th style="width:12%;">Limb</th>
+          <th style="width:38%;">Criteria</th>
+          <th style="width:8%;">Measure (No.)</th>
+          <th style="width:8%;">Class Average</th>
+          <th style="width:8%;">80th percentile</th>
+          <th style="width:10%;">Best Measure of your Class</th>
+          <th style="width:10%;">Your Score (out of 5)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1.1</td>
+          <td>Lower</td>
+          <td class="measure-left">Maximum "chair squats" in 60 seconds</td>
+          <td>{{ chairsquat_measure }}</td>
+          <td>{{ chairsquat_avg }}</td>
+          <td>{{ chairsquat_p }}</td>
+          <td>{{ chairsquat_best }}</td>
+          <td>{{ chairsquat_score }}</td>
+        </tr>
+        <tr>
+          <td>1.2</td>
+          <td>Upper</td>
+          <td class="measure-left">Maximum Medicine Ball Press in 60 seconds</td>
+          <td>{{ ohmbp_measure }}</td>
+          <td>{{ ohmbp_avg }}</td>
+          <td>{{ ohmbp_p }}</td>
+          <td>{{ ohmbp_best }}</td>
+          <td>{{ ohmbp_score }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="small-note">*Strength is the ability to produce force against resistance. It is also the foundation for increasing power</div>
 
-  <table class="strength-table">
-    <thead>
-      <tr>
-        <th style="width:6%;">#</th>
-        <th style="width:14%;">Limb</th>
-        <th style="width:40%;">Criteria</th>
-        <th style="width:8%;">Measure (No.)</th>
-        <th style="width:10%;">Class Average</th>
-        <th style="width:10%;">80th percentile</th>
-        <th style="width:12%;">Best Measure of your Class</th>
-        <th style="width:10%;">Your Score (out of 5)</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>1.1</td>
-        <td>Lower</td>
-        <td class="measure-left">Maximum "chair squats" in 60 seconds</td>
-        <td>{{ chair_measure }}</td>
-        <td>{{ chair_class_avg }}</td>
-        <td>{{ chair_80th }}</td>
-        <td>{{ chair_best }}</td>
-        <td>{{ chair_score }}</td>
-      </tr>
-      <tr>
-        <td>1.2</td>
-        <td>Upper</td>
-        <td class="measure-left">Maximum Medicine Ball Press in 60 seconds</td>
-        <td>{{ mbp_measure }}</td>
-        <td>{{ mbp_class_avg }}</td>
-        <td>{{ mbp_80th }}</td>
-        <td>{{ mbp_best }}</td>
-        <td>{{ mbp_score }}</td>
-      </tr>
-    </tbody>
-  </table>
+    <div class="section-title">POWER</div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="width:6%;">#</th>
+          <th style="width:12%;">Limb</th>
+          <th style="width:38%;">Criteria</th>
+          <th style="width:8%;">Measure (meters)</th>
+          <th style="width:8%;">Class Average</th>
+          <th style="width:8%;">80th percentile</th>
+          <th style="width:10%;">Best Measure of your Class</th>
+          <th style="width:10%;">Your Score (out of 5)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>2.1</td>
+          <td>Lower</td>
+          <td class="measure-left">Standing Broad Jump Distance</td>
+          <td>{{ sbj_measure }}</td>
+          <td>{{ sbj_avg }}</td>
+          <td>{{ sbj_p }}</td>
+          <td>{{ sbj_best }}</td>
+          <td>{{ sbj_score }}</td>
+        </tr>
+        <tr>
+          <td>2.2</td>
+          <td>Upper</td>
+          <td class="measure-left">Seated Medicine Ball Throw Distance (kg)</td>
+          <td>{{ smbt_measure }}</td>
+          <td>{{ smbt_avg }}</td>
+          <td>{{ smbt_p }}</td>
+          <td>{{ smbt_best }}</td>
+          <td>{{ smbt_score }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="small-note">Power is strength applied at speed. Power tests are important benchmarks of an athlete's progression.</div>
 
-  <div class="small-note">*Strength is the ability to produce force against resistance. It is also the foundation for increasing power</div>
+    <div class="section-title">SPEED &amp; AGILITY</div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="width:6%;">#</th>
+          <th style="width:12%;">Test</th>
+          <th style="width:38%;">Criteria</th>
+          <th style="width:8%;">Measure (seconds)</th>
+          <th style="width:8%;">Class Average</th>
+          <th style="width:8%;">80th percentile</th>
+          <th style="width:10%;">Best Measure in your Class</th>
+          <th style="width:10%;">Your Score (out of 5)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>3.1</td>
+          <td>20 meter Sprint</td>
+          <td class="measure-left">Maximum running speed</td>
+          <td>{{ runspeed_measure }}</td>
+          <td>{{ runspeed_avg }}</td>
+          <td>{{ runspeed_p }}</td>
+          <td>{{ runspeed_best }}</td>
+          <td>{{ runspeed_score }}</td>
+        </tr>
+        <tr>
+          <td>3.2</td>
+          <td>Pro Agility</td>
+          <td class="measure-left">Agility course: change direction, accelerate &amp; decelerate</td>
+          <td>{{ proagility_measure }}</td>
+          <td>{{ proagility_avg }}</td>
+          <td>{{ proagility_p }}</td>
+          <td>{{ proagility_best }}</td>
+          <td>{{ proagility_score }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="small-note">20 meter sprint determines acceleration and speed. Pro Agility measures change of direction speed.</div>
 
+    <div class="section-title">FLEXIBILITY</div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="width:6%;">#</th>
+          <th style="width:12%;">Limb</th>
+          <th style="width:40%;">Criteria</th>
+          <th style="width:8%;">Measure (1-3)</th>
+          <th style="width:8%;">Class Average</th>
+          <th style="width:8%;">% with 3 measure </th>
+          <th style="width:8%;">Best Measure in your Class</th>
+          <th style="width:10%;">Your Score (out of 5)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>4.1</td>
+          <td>Lower</td>
+          <td class="measure-left">Active Straight Leg Raise (SLR)</td>
+          <td>{{ slr_measure }}</td>
+          <td>{{ slr_avg }}</td>
+          <td>{{ slr_pct_3 }}</td>
+          <td>{{ slr_best }}</td>
+          <td>{{ slr_score }}</td>
+        </tr>
+        <tr>
+          <td>4.2</td>
+          <td>Upper</td>
+          <td class="measure-left">Shoulder Mobility</td>
+          <td>{{ shouldermob_measure }}</td>
+          <td>{{ shouldermob_avg }}</td>
+          <td>{{ shouldermob_pct_3 }}</td>
+          <td>{{ shouldermob_best }}</td>
+          <td>{{ shouldermob_score }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="small-note">Flexibility tests are based on Functional Movement Screen (FMS). Active SLR gives an indication of hamstring tightness.</div>
+
+    <div class="section-title">BALANCE</div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="width:6%;">#</th>
+          <th style="width:40%;">Criteria</th>
+          <th style="width:8%;">Measure (1-3)</th>
+          <th style="width:8%;">Class Average</th>
+          <th style="width:8%;">% with 3 measure </th>
+          <th style="width:8%;">Best Measure in your Class</th>
+          <th style="width:10%;">Your Score (out of 5)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>4.1</td>
+          <td class="measure-left">Balance by standing on one Leg for 30seconds with eyes open</td>
+          <td>{{ baleyesopen_measure }}</td>
+          <td>{{ baleyesopen_avg }}</td>
+          <td>{{ baleyesopen_pct_3 }}</td>
+          <td>{{ baleyesopen_best }}</td>
+          <td>{{ baleyesopen_score }}</td>
+        </tr>
+      </tbody>
+    </table>    
+
+    <div class="footer-note">PS: Due to an injury, some tests were not performed. To stand and maintain balance on one leg for a maximum 30 seconds. Children with better balance are less likely to experience injuries related to falls or awkward movements.</div>
+  </div>
 </body>
 </html>
