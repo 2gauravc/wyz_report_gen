@@ -57,7 +57,12 @@ def add_group_stats(
 
     # score
     if score_fn is not None:
-        df[f"{value_col}_score"] = grp.transform(score_fn)
+        scores = grp.transform(score_fn) 
+        if better == "lower":
+            max_score = scores.max()
+            scores = max_score - scores + 1
+
+        df[f"{value_col}_score"] = scores
 
 def _clean_col(col: str) -> str:
     return re.sub(r"[^a-z0-9]", "", col.lower())
