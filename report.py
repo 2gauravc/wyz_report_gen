@@ -57,7 +57,7 @@ def add_group_stats(
 
     # score
     if score_fn is not None:
-        scores = grp.transform(score_fn) 
+        scores = grp.transform(score_fn).round(0) 
         if better == "lower":
             max_score = scores.max()
             scores = max_score - scores + 1
@@ -121,6 +121,7 @@ def render_html_for_first_n(df_out: pd.DataFrame, template_path: str, out_dir: s
             'name': row.get('name', ''),
             'height': row.get('height', ''),
             'fitness_score': row.get('fitnessscore', ''),
+            'maxfitness_score': row.get('maxfitnessscore', ''),
             'class': row.get('class', ''),
             'gender': row.get('gender', ''),
             'weight': row.get('weight', ''),
@@ -189,9 +190,6 @@ def render_html_for_first_n(df_out: pd.DataFrame, template_path: str, out_dir: s
             'shouldermob_pct_3': row.get('shouldermob_pct_3' ,''),
             'shouldermob_best': row.get('shouldermob_best', ''),
             'shouldermob_score': row.get('shouldermob_score', ''),
-
-            # Fitness Score 
-            'fitnessscore': row.get('fitnessscore', ''),
 
             # BALANCE 
             'baleyesopen_measure': row.get('baleyesopen', ''),
@@ -443,10 +441,10 @@ def process(input_csv: str, output_csv: str) -> pd.DataFrame:
     percentile=80)
         
     # Create a combined fitness total (sum of available scores)
-    score_cols = ['chairsquat_score', 'ohmbp_score', 'sbj_score', 'smbt_score', 'runspeed_score', 'proagility_score', 'slr_score', 'shouldermob_score']
+    score_cols = ['chairsquat_score', 'ohmbp_score', 'sbj_score', 'smbt_score', 'runspeed_score', 'proagility_score', 'slr_score', 'shouldermob_score', 'baleyesopen_score']
 
     def sum_scores(row):
-        s = 0.0
+        s = 0
         count = 0
         for c in score_cols:
             if c in row and pd.notna(row[c]):
@@ -454,8 +452,9 @@ def process(input_csv: str, output_csv: str) -> pd.DataFrame:
                 count += 1
         return int(s) if count > 0 else np.nan
 
-    work['fitnessscore'] = work.apply(sum_scores, axis=1)   
-
+    work['fitnessscore'] = work.apply(sum_scores, axis=1).round(0).astype('Int64')
+    work['maxfitnessscore'] = sum([5 for c in score_cols if c in work.columns])
+    
     # Reorder columns as requested (include many of the newly computed fields)
     out_cols = [
     "srno", "name", "class", "grade", "section", "gender", "height", "weight", 
@@ -467,7 +466,7 @@ def process(input_csv: str, output_csv: str) -> pd.DataFrame:
     "proagility", "proagility_avg", "proagility_p", "proagility_best", "proagility_score",
     "slr", "slr_avg", "slr_pct_3", "slr_best", "slr_score", 
     "shouldermob", "shouldermob_avg", "shouldermob_pct_3", "shouldermob_best", "shouldermob_score", 
-    "fitnessscore",
+    "fitnessscore", "maxfitnessscore",
     "baleyesopen", "baleyesopen_avg", "baleyesopen_p", "baleyesopen_best", "baleyesopen_score",
     "comments"]
     
