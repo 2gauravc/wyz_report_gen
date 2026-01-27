@@ -11,6 +11,15 @@ import subprocess
 import shutil
 import glob
 
+def display_value(v, na="NA"):
+    if v is None:
+        return na
+    if isinstance(v, float) and np.isnan(v):
+        return na
+    if pd.isna(v):
+        return na
+    return v
+
 def safe_numeric_col(
     source_df: pd.DataFrame,
     col_name: str,
@@ -117,7 +126,7 @@ def render_html_for_first_n(df_out: pd.DataFrame, template_path: str, out_dir: s
         # map many possible column names to the template variables
         ctx = {
             'logo_url': "file:///workspaces/codespaces-blank/wdyrz/images/wyrz_logo.svg",
-            'school_name': row.get('schoolname', 'EklavyaSchool, Ahmedabad'),
+            'school_name': row.get('schoolname', 'St Dominic Savio, Kanpur'),
             'name': row.get('name', ''),
             'height': row.get('height', ''),
             'fitness_score': row.get('fitnessscore', ''),
@@ -201,6 +210,7 @@ def render_html_for_first_n(df_out: pd.DataFrame, template_path: str, out_dir: s
             ## Comments 
             'comments': row.get('Comments', row.get('comments', '')),
         }
+        ctx = {k: display_value(v) for k, v in ctx.items()}
 
         fname_name = sanitize_fname(str(row.get('Name', f'student_{i}')))
         fname_sr = sanitize_fname(str(row.get('Sr No', i)))
