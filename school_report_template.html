@@ -60,6 +60,7 @@
     .kpi .small{ color:var(--muted); font-size:12px; margin-top:6px; }
 
     .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px; }
+    .one-col{ margin-top:10px; }
 
     table{ width:100%; border-collapse:collapse; font-size:12.5px; }
     th, td{ border-bottom:1px solid var(--line); padding:8px 6px; text-align:left; }
@@ -103,12 +104,6 @@
           {% for s in sections %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
         </select>
 
-        <select id="genderSel">
-          <option value="">Boys vs Girls</option>
-          <option value="Boy">Only Boys</option>
-          <option value="Girl">Only Girls</option>
-        </select>
-
         <button class="btn" onclick="window.print()">Print / Save PDF</button>
       </div>
     </header>
@@ -118,19 +113,14 @@
         <h2>Overview</h2>
 
         <div class="kpis" id="kpis"></div>
-
-        <div class="two-col">
-          <div>
-            <h2 style="margin-top:12px;">Fitness Score Distribution</h2>
-            <canvas id="fitnessHist" height="180"></canvas>
-            <div class="note">Histogram uses <code>fitnessscore</code> for the filtered set.</div>
-          </div>
-          <div>
-            <h2 style="margin-top:12px;">Key Averages (Boys vs Girls)</h2>
-            <canvas id="avgBar" height="180"></canvas>
-            <div class="note">Height, Weight, Fitness Score, Run Speed Score, Pro Agility Score.</div>
+        <div class="one-col">
+          <h2 style="margin-top:12px;">Fitness Score Distribution (Boys vs Girls)</h2>
+          <canvas id="fitnessHist" height="180"></canvas>
+          <div class="note">
+            Histogram uses <code>fitnessscore</code> for the filtered set, split into Boys and Girls.
           </div>
         </div>
+
       </div>
 
       <div class="card">
@@ -158,14 +148,6 @@
     const TEST_BEST_COLS = [
       "chairsquat_best","ohmbp_best","sbj_best","smbt_best","runspeed_best","proagility_best",
       "slr_best","shouldermob_best","baleyesopen_best"
-    ];
-
-    const AVG_BAR = [
-      ["height", "Height (cm)"],
-      ["weight", "Weight (kg)"],
-      ["fitnessscore", "Fitness Score"],
-      ["runspeed_score", "Run Speed Score"],
-      ["proagility_score", "Pro Agility Score"]
     ];
 
     const RADAR = [
@@ -199,18 +181,25 @@
       return xs[lo]*(1-w) + xs[hi]*w;
     }
     function median(arr){ return pct(arr, 50); }
-    function histogram(values, bins=8){
+    function histogram(values, bins=8, range=null){
       const xs = values.filter(v => Number.isFinite(v));
       if (!xs.length) return {labels:[], counts:[]};
-      let min = Math.min(...xs), max = Math.max(...xs);
+
+      let min = range?.min ?? Math.min(...xs);
+      let max = range?.max ?? Math.max(...xs);
+
       if (min === max) return {labels:[String(min)], counts:[xs.length]};
+
       const step = (max - min) / bins;
       const counts = new Array(bins).fill(0);
+
       for (const v of xs){
+        if (v < min || v > max) continue;
         let idx = Math.floor((v - min) / step);
         if (idx === bins) idx = bins-1;
         counts[idx]++;
       }
+
       const labels = counts.map((_,i)=>{
         const a = min + i*step;
         const b = a + step;
@@ -218,6 +207,8 @@
       });
       return {labels, counts};
     }
+
+
     function computeBMI(hCm, wKg){
       if (!Number.isFinite(hCm) || !Number.isFinite(wKg) || hCm <= 0) return NaN;
       const m = hCm / 100;
@@ -262,7 +253,7 @@
     }
 
     // Charts
-    let CH = {hist:null, bar:null, radar:null};
+    let CH = {hist:null, radar:null};
     function destroyCharts(){
       for (const k of Object.keys(CH)){
         if (CH[k]) { CH[k].destroy(); CH[k]=null; }
@@ -322,24 +313,34 @@
     function renderCharts(filteredRows, boysRows, girlsRows){
       destroyCharts();
 
-      // hist
-      const fitnessVals = filteredRows.map(r => toNum(r.fitnessscore));
-      const hist = histogram(fitnessVals, 8);
-      CH.hist = new Chart(document.getElementById("fitnessHist"), {
-        type: "bar",
-        data: { labels: hist.labels, datasets: [{ label: "Students", data: hist.counts }] },
-        options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } } }
-      });
+    // hist (split: Boys vs Girls with shared bins)
+    const allFitness = filteredRows.map(r => toNum(r.fitnessscore)).filter(v => Number.isFinite(v));
 
-      // avg bar (boys vs girls)
-      const labels = AVG_BAR.map(x => x[1]);
-      const bData = AVG_BAR.map(x => mean(boysRows.map(r => toNum(r[x[0]]))));
-      const gData = AVG_BAR.map(x => mean(girlsRows.map(r => toNum(r[x[0]]))));
-      CH.bar = new Chart(document.getElementById("avgBar"), {
-        type: "bar",
-        data: { labels, datasets: [{ label:"Boys (avg)", data:bData }, { label:"Girls (avg)", data:gData }] },
-        options: { responsive:true, plugins:{ legend:{ position:"bottom" } } }
-      });
+    const range = allFitness.length
+      ? { min: Math.min(...allFitness), max: Math.max(...allFitness) }
+      : null;
+
+    const boysFitness = boysRows.map(r => toNum(r.fitnessscore));
+    const girlsFitness = girlsRows.map(r => toNum(r.fitnessscore));
+
+    const boysHist = histogram(boysFitness, 8, range);
+    const girlsHist = histogram(girlsFitness, 8, range);
+
+    CH.hist = new Chart(document.getElementById("fitnessHist"), {
+      type: "bar",
+      data: {
+        labels: boysHist.labels,
+        datasets: [
+          { label: "Boys", data: boysHist.counts },
+          { label: "Girls", data: girlsHist.counts }
+        ]
+      },
+      options: {
+        responsive:true,
+        plugins:{ legend:{ position:"bottom" } },
+        scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } }
+      }
+    });
 
       // radar
       const rLabels = RADAR.map(x => x[1]);
@@ -356,7 +357,6 @@
       const grade = document.getElementById("gradeSel").value;
       const cls = document.getElementById("classSel").value;
       const sec = document.getElementById("sectionSel").value;
-      const genderOnly = document.getElementById("genderSel").value; // Boy/Girl/""
 
       let rows = ALL_ROWS.slice();
 
@@ -366,7 +366,6 @@
 
       // If user chooses "Only Boys" or "Only Girls", we still show gender split table/charts,
       // but the filtered set becomes that gender. For split charts we use within the filtered set.
-      if (genderOnly) rows = rows.filter(r => String(r.gender_norm ?? "") === genderOnly);
 
       const boysRows = rows.filter(r => r.gender_norm === "Boy");
       const girlsRows = rows.filter(r => r.gender_norm === "Girl");
@@ -382,7 +381,7 @@
     }
 
     // Wire events
-    ["gradeSel","classSel","sectionSel","genderSel"].forEach(id => {
+    ["gradeSel","classSel","sectionSel"].forEach(id => {
       document.getElementById(id).addEventListener("change", applyFilters);
     });
 

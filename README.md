@@ -13,9 +13,8 @@ python3 report.py input_data/master_6th_class.csv -o out_csv/report_output.csv -
 ## Run the school report
 
 ```
-python school_report.py --csv out_csv/report_output.csv --out out_html/school_summary.html
+python school_report.py --csv out_csv/report_output.csv --out out_html/school_summary.html --template school_report_template.html
 ```
-
 
 # Observed Metric and Reporting Logic 
 
