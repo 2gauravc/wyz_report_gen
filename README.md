@@ -5,10 +5,17 @@
 sudo apt-get update && sudo apt-get install -y wkhtmltopdf
 ```
 
-## Run the code 
+## Run the individual student report  
 ```
 python3 report.py input_data/master_6th_class.csv -o out_csv/report_output.csv --render-html --template report_template.html --html-outdir out_html --pdf-outdir out_pdf --limit 10 --to-pdf
 ```
+
+## Run the school report
+
+```
+python school_report.py --csv out_csv/report_output.csv --out out_html/school_summary.html
+```
+
 
 # Observed Metric and Reporting Logic 
 
