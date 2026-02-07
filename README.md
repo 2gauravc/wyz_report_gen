@@ -2,8 +2,17 @@
 
 ## Install wkhtmltopdf
 ```bash
-sudo apt-get update && sudo apt-get install -y wkhtmltopdf
+sudo apt-get update 
+sudo apt-get install -y wkhtmltopdf
+wkhtmltopdf --version
 ```
+
+## Install packages 
+
+```
+pip install -r requirements.txt
+```
+
 
 ## Run the individual student report  
 
