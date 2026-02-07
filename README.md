@@ -40,6 +40,6 @@ python school_report.py --csv out_csv/report_output.csv --out out_html/school_su
 |       **6** | Pro-Agility (5-0-5)             | `proagility`   | Time taken in **seconds**                       | Gender, Class (Grade)   | Average, 80th percentile, Best | **Score (1–5)** using min–max range bins *(lower is better)*   |
 |       **7** | Active Straight Leg Raise (FMS) | `slr`          | Left & right assessed using **FMS scale (1–3)** | Gender, Class (Grade)   | Average, Best                  | **Ordinal mapping:** 1→1, 2→3, 3→5 (worse of L/R)              |
 |       **8** | Shoulder Mobility (FMS)         | `shouldermob`  | Left & right assessed using **FMS scale (1–3)** | Gender, Class (Grade)   | Average, Best                  | **Ordinal mapping:** 1→1, 2→3, 3→5 (worse of L/R)              |
-|       **9** | Balance – Eyes Open             | `baleyesopen`  | Single-leg balance hold time in **seconds**     | Gender, Class (Grade)                     | Best                           | **Fixed scale:** 1–6s→1, 7–12s→2, 13–18s→3, 19–24s→4, 25–30s→5 |
+|       **9** | Balance – Eyes Open             | `baleyesopen`  | Single-leg balance hold time in **seconds**     | Gender, Class (Grade)                     | Average, Best                           | **Fixed scale:** 1–6s→1, 7–12s→2, 13–18s→3, 19–24s→4, 25–30s→5 |
 
 ## Level 1 Metrics 
