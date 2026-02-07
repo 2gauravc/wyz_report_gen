@@ -9,7 +9,7 @@ sudo apt-get update && sudo apt-get install -y wkhtmltopdf
 
 Render HTML and PDF 
 ```
-python3 student_report.py input_data/master_6th_class.csv -o out_csv/report_output.csv --render-html --template student_report/student_report_template.html --html-outdir out_html --pdf-outdir out_pdf --limit 10 --to-pdf
+python3 src/student_report.py data/input_data/master_6th_class.csv -o output/out_csv/report_output.csv --render-html --template templates/student_report_template.html --html-outdir output/out_html --pdf-outdir output/out_pdf --limit 2 --to-pdf
 ```
 
 Only generate CSV. do not render HTMl and PDF 
