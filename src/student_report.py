@@ -11,6 +11,11 @@ import subprocess
 import shutil
 import glob
 
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
 def display_value(v, na="NA"):
     if v is None:
         return na
@@ -119,11 +124,11 @@ def render_html_for_first_n(df_out: pd.DataFrame, template_path: str, out_dir: s
 
     def sanitize_fname(s: str) -> str:
         return re.sub(r"[^0-9A-Za-z._-]", "_", s)[:80]
-
+    logo_path = REPO_ROOT / "assets/images/wyrz_logo.svg"
     for i, row in df_out.head(n).iterrows():
         # map many possible column names to the template variables
         ctx = {
-            'logo_url': "file:///workspaces/codespaces-blank/wdyrz/assets/images/wyrz_logo.svg",
+            'logo_url': logo_path.resolve().as_uri(),
             'school_name': row.get('schoolname', 'St Dominic Savio, Kanpur'),
             'name': row.get('name', ''),
             'height': row.get('height', ''),
