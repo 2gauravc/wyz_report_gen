@@ -1,152 +1,577 @@
-defaults:
-  group_cols: [grade, gender]
-  percentile: 80
+version: 1
+report_context:
+  school_name:
+    source: "static"          # static | env | cli | csv | derived
+    default: "WYRDZ School"
+    label_key: "ctx.school_name.label"
 
-levels:
+  logos:
+    platform:
+      label_key: "ctx.logo.platform"
+      source: "repo_asset"
+      path: "assets/images/wyrz_logo.svg"
+      position: "left"      # left | right | center
+      required: true
 
+    school:
+      label_key: "ctx.logo.school"
+      source: "cli_or_config"
+      default: null
+      position: "right"
+      required: false
+  
+  report_title:
+    source: "static"
+    default: "Individual Fitness Testing & Assessment"
+    label_key: "ctx.report_title.label"
+
+dataset: #This section has raw/derived measurements; before scoring logic is applied. 
+  # -------------------------------------------------
+  # A. Entity columns (identity & grouping)
+  # -------------------------------------------------
+  entity_columns: # 6 columns 
+    srno:
+      col_name_patterns: ["^sr$", "^srno$", "^sr_no$", "^sno$", "serial", "roll"]
+      required: false
+      dtype: "string"
+      normalize_values:
+        strip: true
+
+    name:
+      col_name_patterns: ["^name$", "student", "student_name"]
+      required: true
+      dtype: "string"
+      normalize_values:
+        strip: true
+        title_case: true
+
+    class:
+      col_name_patterns: ["^class$", "class_name"]
+      required: true
+      dtype: "string"
+      normalize_values:
+        strip: true
+
+    grade:
+      col_name_patterns: ["^grade$", "std", "standard"]
+      required: false
+      dtype: "number"
+      derive:
+        from: "class"
+        method: "regex"
+        regex: "^(\\d+)"
+        cast: "int"
+
+    section:
+      col_name_patterns: ["^section$"]
+      required: false
+      dtype: "string"
+      derive:
+        from: "class"
+        method: "regex"
+        regex: "^(\\d+)([A-Za-z])$"
+        group: 2
+
+    gender:
+      col_name_patterns: ["^b/g$", "^bg$", "^gender$", "sex"]
+      required: true
+      dtype: "category"
+      normalize_values:
+        strip: true
+        lower: true
+        map:
+          boy: "Boy"
+          b: "Boy"
+          male: "Boy"
+          girl: "Girl"
+          g: "Girl"
+          female: "Girl"
+
+  # -------------------------------------------------
+  # 2. Measurement columns (raw observations)
+  # -------------------------------------------------
+  measurement_columns: # 14 cols
+    height_cm:
+      col_name_patterns: ["^height$", "height_cm", "ht"]
+      required: true
+      dtype: "number"
+      normalize_values:
+        unit: "cm"
+      validate: { min: 80, max: 220 }
+
+    weight_kg:
+      col_name_patterns: ["^weight$", "weight_kg", "wt"]
+      required: false
+      dtype: "number"
+      normalize_values:
+        unit: "kg"
+      validate: { min: 10, max: 150 }
+
+    slr_left:
+      col_name_patterns: ["slrleft", "straightlegraiseleft"]
+      required: true
+      dtype: "number"
+      validate: { min: 1, max: 3 }
+
+    slr_right:
+      col_name_patterns: ["slright", "straightlegraiseright"]
+      required: true
+      dtype: "number"
+      validate: { min: 1, max: 3 }
+
+    smbt_m:
+      col_name_patterns: ["smbt", "sittingmedicineballthrow", "seatedmedicineballthrow"]
+      required: true
+      dtype: "number"
+      validate: { min: 0.0, max: 20.0 }
+
+    sprint_20m_sec:
+      col_name_patterns: ["speed20mbest", "runspeed", "20m", "sprint"]
+      required: true
+      dtype: "number"
+      validate: { min: 2.0, max: 20.0 }
+
+    oh_mbp_60s_reps:
+      col_name_patterns: ["ohmbseatedpress1min", "ohmbp", "ohmbp60s"]
+      required: true
+      dtype: "number"
+      validate: { min: 0, max: 200 }
+
+    shoulder_mobility_left:
+      col_name_patterns: ["shouldermobilityleft", "shouldermobleft"]
+      required: true
+      dtype: "number"
+      validate: { min: 1, max: 3 }
+
+    shoulder_mobility_right:
+      col_name_patterns: ["shouldermobilityright", "shouldermobright"]
+      required: true
+      dtype: "number"
+      validate: { min: 1, max: 3 }
+
+    sbj_m:
+      col_name_patterns: ["sbj", "standingbroadjump"]
+      required: true
+      dtype: "number"
+      validate: { min: 0.0, max: 4.0 }
+
+    pro_agility_505_sec:
+      col_name_patterns: ["proagility", "505", "5-0-5"]
+      required: true
+      dtype: "number"
+      validate: { min: 2.0, max: 30.0 }
+
+    chair_squat_60s_reps:
+      col_name_patterns: ["chairsquats1min", "chairsquat", "squats"]
+      required: true
+      dtype: "number"
+      validate: { min: 0, max: 200 }
+
+    balance_eo_left_sec:
+      col_name_patterns: ["slbalanceeoleft", "baleyesopenleft"]
+      required: true
+      dtype: "number"
+      validate: { min: 0, max: 30 }
+
+    balance_eo_right_sec:
+      col_name_patterns: ["slbalanceeoright", "baleyesopenright"]
+      required: true
+      dtype: "number"
+      validate: { min: 0, max: 30 }
+
+  # -------------------------------------------------
+  # 3. Derived attributes (contextual, not scored)
+  # -------------------------------------------------
+  derived_attributes:
+    bmi:
+      depends_on: ["height_cm", "weight_kg"]
+      compute:
+        method: "bmi"
+        round: 1
+      validate:
+        min: 10
+        max: 40
+
+  derived_attributes:
+    bmi:
+      depends_on: ["height_cm", "weight_kg"]
+      compute:
+        method: "bmi"           # your code implements this
+        round: 1
+      validate:
+        min: 10
+        max: 40
+
+
+metrics:
   level0:
-    # Level 0 = raw observations -> group stats + score columns
-    metrics:
-      - key: chairsquat
-        label: Maximum Chair Squats
-        value_col: chairsquat
-        aggregates: [avg, p80, best]
-        scoring:
-          type: bins
-          bins_count: 5
-          better: higher
-        outputs:
-          score_col: chairsquat_score
 
-      - key: ohmbp
-        label: Maximum Medicine Ball Press
-        value_col: ohmbp
-        aggregates: [avg, p80, best]
-        scoring:
-          type: bins
-          bins_count: 5
-          better: higher
-        outputs:
-          score_col: ohmbp_score
+    chair_squat_60s:
+      label_key: "m.chair_squat_60s.label"
+      desc_key: "m.chair_squat_60s.desc"
+      unit: "reps"
+      input:
+        col_name_patterns: ["squats", "chairsquat", "chairsquat60s"]
+        required: true
+        dtype: "number"
+      validate: { min: 0, max: 200 }
+      process:
+        direction: "higher_is_better"
+        group_by: ["gender", "grade"]
+        score:
+          method: "quantile_bins"
+          bins: 5
+          group_by: ["gender", "grade"]
+        aggregates:
+          - { name: "avg", method: "mean", group_by: ["gender", "grade"] }
+          - { name: "p80", method: "percentile", q: 80, group_by: ["gender", "grade"] }
+          - { name: "best", method: "auto", group_by: ["gender", "grade"] }
 
-      - key: sbj
-        label: Standing Broad Jump
-        value_col: sbj
-        aggregates: [avg, p80, best]
-        scoring:
-          type: bins
-          bins_count: 5
-          better: higher
-        outputs:
-          score_col: sbj_score
+    oh_mbp_60s:
+      label_key: "m.oh_mbp_60s.label"
+      desc_key: "m.oh_mbp_60s.desc"
+      unit: "reps"
+      input:
+        col_name_patterns: ["ohmbp", "ohmbp60s"]
+        required: true
+        dtype: "number"
+      validate: { min: 0, max: 200 }
+      process:
+        direction: "higher_is_better"
+        group_by: ["gender", "grade"]
+        score:
+          method: "quantile_bins"
+          bins: 5
+          group_by: ["gender", "grade"]
+        aggregates:
+          - { name: "avg", method: "mean", group_by: ["gender", "grade"] }
+          - { name: "p80", method: "percentile", q: 80, group_by: ["gender", "grade"] }
+          - { name: "best", method: "auto", group_by: ["gender", "grade"] }
 
-      - key: smbt
-        label: Seated Medicine Ball Throw
-        value_col: smbt
-        aggregates: [avg, p80, best]
-        scoring:
-          type: bins
-          bins_count: 5
-          better: higher
-        outputs:
-          score_col: smbt_score
+    standing_broad_jump:
+      label_key: "m.sbj.label"
+      desc_key: "m.sbj.desc"
+      unit: "m"
+      input:
+        col_name_patterns: ["sbj", "standingbroadjump"]
+        required: true
+        dtype: "number"
+      validate: { min: 0.0, max: 4.0 }
+      process:
+        direction: "higher_is_better"
+        group_by: ["gender", "grade"]
+        score:
+          method: "quantile_bins"
+          bins: 5
+          group_by: ["gender", "grade"]
+        aggregates:
+          - { name: "avg", method: "mean", group_by: ["gender", "grade"] }
+          - { name: "p80", method: "percentile", q: 80, group_by: ["gender", "grade"] }
+          - { name: "best", method: "auto", group_by: ["gender", "grade"] }
 
-      - key: runspeed
-        label: 20m Sprint Speed
-        value_col: runspeed
-        aggregates: [avg, p80, best]
-        scoring:
-          type: bins
-          bins_count: 5
-          better: lower
-        outputs:
-          score_col: runspeed_score
+    seated_medicine_ball_throw:
+      label_key: "m.smbt.label"
+      desc_key: "m.smbt.desc"
+      unit: "m"
+      input:
+        col_name_patterns: ["smbt", "seatedmedicineballthrow"]
+        required: true
+        dtype: "number"
+      validate: { min: 0.0, max: 20.0 }
+      process:
+        direction: "higher_is_better"
+        group_by: ["gender", "grade"]
+        score:
+          method: "quantile_bins"
+          bins: 5
+          group_by: ["gender", "grade"]
+        aggregates:
+          - { name: "avg", method: "mean", group_by: ["gender", "grade"] }
+          - { name: "p80", method: "percentile", q: 80, group_by: ["gender", "grade"] }
+          - { name: "best", method: "auto", group_by: ["gender", "grade"] }
 
-      - key: proagility
-        label: Pro-Agility (5-0-5)
-        value_col: proagility
-        aggregates: [avg, p80, best]
-        scoring:
-          type: bins
-          bins_count: 5
-          better: lower
-        outputs:
-          score_col: proagility_score
+    sprint_20m:
+      label_key: "m.sprint_20m.label"
+      desc_key: "m.sprint_20m.desc"
+      unit: "sec"
+      input:
+        col_name_patterns: ["20m", "sprint", "runspeed", "run_speed"]
+        required: true
+        dtype: "number"
+      validate: { min: 2.0, max: 20.0 }
+      process:
+        direction: "lower_is_better"
+        group_by: ["gender", "grade"]
+        score:
+          method: "quantile_bins"
+          bins: 5
+          invert: true
+          group_by: ["gender", "grade"]
+        aggregates:
+          - { name: "avg", method: "mean", group_by: ["gender", "grade"] }
+          - { name: "p80", method: "percentile", q: 80, group_by: ["gender", "grade"] }
+          - { name: "best", method: "auto", group_by: ["gender", "grade"] }
 
-      - key: slr
-        label: Active Straight Leg Raise (FMS)
-        value_col: slr
-        aggregates: [avg, best, pct_eq_3]
-        scoring:
-          type: ordinal_map
-          map: {1: 1, 2: 3, 3: 5}
-        outputs:
-          score_col: slr_score
+    pro_agility_505:
+      label_key: "m.pro_agility_505.label"
+      desc_key: "m.pro_agility_505.desc"
+      unit: "sec"
+      input:
+        col_name_patterns: ["proagility", "505", "5-0-5", "agility"]
+        required: true
+        dtype: "number"
+      validate: { min: 2.0, max: 30.0 }
+      process:
+        direction: "lower_is_better"
+        group_by: ["gender", "grade"]
+        score:
+          method: "quantile_bins"
+          bins: 5
+          invert: true
+          group_by: ["gender", "grade"]
+        aggregates:
+          - { name: "avg", method: "mean", group_by: ["gender", "grade"] }
+          - { name: "p80", method: "percentile", q: 80, group_by: ["gender", "grade"] }
+          - { name: "best", method: "auto", group_by: ["gender", "grade"] }
+    # --- SLR inputs (raw) ---
+    straight_leg_raise_left:
+      label_key: "m.slr_left.label"
+      desc_key: "m.slr_left.desc"
+      unit: "score"
+      input:
+        col_name_patterns: ["slrleft", "straightlegraiseleft"]
+        required: true
+        dtype: "number"
+      validate: { min: 1, max: 3 }
 
-      - key: shouldermob
-        label: Shoulder Mobility (FMS)
-        value_col: shouldermob
-        aggregates: [avg, best, pct_eq_3]
-        scoring:
-          type: ordinal_map
-          map: {1: 1, 2: 3, 3: 5}
-        outputs:
-          score_col: shouldermob_score
+    straight_leg_raise_right:
+      label_key: "m.slr_right.label"
+      desc_key: "m.slr_right.desc"
+      unit: "score"
+      input:
+        col_name_patterns: ["slright", "straightlegraiseright"]
+        required: true
+        dtype: "number"
+      validate: { min: 1, max: 3 }
 
-      - key: baleyesopen
-        label: Balance – Eyes Open
-        value_col: baleyesopen
-        aggregates: [avg, p80, best]
-        scoring:
-          type: fixed_bins
+    # --- SLR reported metric (derived as min of left/right) ---
+    straight_leg_raise:
+      label_key: "m.slr.label"
+      desc_key: "m.slr.desc"
+      unit: "score"
+      derived:
+        method: "min"
+        inputs: ["straight_leg_raise_left", "straight_leg_raise_right"]
+      validate: { min: 1, max: 3 }
+      process:
+        direction: "higher_is_better"
+        group_by: ["gender", "grade"]
+        score:
+          method: "fixed_map"
+          map:
+            1: 1
+            2: 3
+            3: 5
+        aggregates:
+          - { name: "avg", method: "mean", group_by: ["gender", "grade"] }
+          - { name: "p80", method: "percentile", q: 80, group_by: ["gender", "grade"] }
+          - { name: "best", method: "auto", group_by: ["gender", "grade"] }
+
+
+    shoulder_mobility:
+      label_key: "m.shoulder_mobility.label"
+      desc_key: "m.shoulder_mobility.desc"
+      unit: "score"   # or "cm"/"score" depending on capture
+      input:
+        col_name_patterns: ["shouldermob", "shoulder", "mobility"]
+        required: true
+        dtype: "number"
+      validate: { min: 0.0, max: 100.0 }  # adjust if your scale is 1-3
+      process:
+        direction: "higher_is_better"
+        group_by: ["gender", "grade"]
+        score:
+          method: "fixed_map"
+          map: 
+            1: 1
+            2: 3
+            3: 5
+          group_by: ["gender", "grade"]
+        aggregates:
+          - { name: "avg", method: "mean", group_by: ["gender", "grade"] }
+          - { name: "p80", method: "percentile", q: 80, group_by: ["gender", "grade"] }
+          - { name: "best", method: "auto", group_by: ["gender", "grade"] }
+
+    balance_eyes_open:
+      label_key: "m.balance_eyes_open.label"
+      desc_key: "m.balance_eyes_open.desc"
+      unit: "sec"
+      input:
+        col_name_patterns: ["balance_eyes_open", "baleyesopen", "balance"]
+        required: true
+        dtype: "number"
+      validate: { min: 0, max: 30 }
+      process:
+        direction: "higher_is_better"
+        group_by: ["gender", "grade"]
+        score:
+          method: "fixed_bins"
           bins:
-            - {max: 6,  score: 1}
-            - {max: 12, score: 2}
-            - {max: 18, score: 3}
-            - {max: 24, score: 4}
-            - {max: 30, score: 5}
-        outputs:
-          score_col: baleyesopen_score
+            - { min: 0,  max: 6,  score: 1 }
+            - { min: 7,  max: 12, score: 2 }
+            - { min: 13, max: 18, score: 3 }
+            - { min: 19, max: 23, score: 4 }
+            - { min: 24, max: 30, score: 5 }
+        aggregates:
+          - { name: "avg", method: "mean", group_by: ["gender", "grade"] }
+          - { name: "p80", method: "percentile", q: 80, group_by: ["gender", "grade"] }
+          - { name: "best", method: "auto", group_by: ["gender", "grade"] }
 
 
-  level1:
-    # Level 1 = attributes computed from Level 0 score columns
-    composites:
-      - key: strength
-        from: [chairsquat_score, ohmbp_score]
-        agg: mean
-        output_col: layer1_strength
+  # Level 1 = domains (strength, power, etc.) built from level0 scores
+# Level 1 = domains (strength, power, etc.) built from level0 scores
+level1:
+  strength:
+    label_key: "d.strength.label"
+    desc_key: "d.strength.desc"
+    child_metrics: ["chair_squat_60s", "oh_mbp_60s"]
+    rollup:
+      input: "score"
+      method: "mean"
+      round: 1
+      score:
+        method: "round_clamp"
+        min: 1
+        max: 5
 
-      - key: power
-        from: [sbj_score, smbt_score]
-        agg: mean
-        output_col: layer1_power
+  power:
+    label_key: "d.power.label"
+    desc_key: "d.power.desc"
+    child_metrics: ["standing_broad_jump", "seated_medicine_ball_throw"]
+    rollup:
+      input: "score"
+      method: "mean"
+      round: 1
+      score:
+        method: "round_clamp"
+        min: 1
+        max: 5
 
-      - key: speed_agility
-        from: [runspeed_score, proagility_score]
-        agg: mean
-        output_col: layer1_speed_agility
+  speed_agility:
+    label_key: "d.speed_agility.label"
+    desc_key: "d.speed_agility.desc"
+    child_metrics: ["sprint_20m", "pro_agility_505"]
+    rollup:
+      input: "score"
+      method: "mean"
+      round: 1
+      score:
+        method: "round_clamp"
+        min: 1
+        max: 5
 
-      - key: flexibility
-        from: [slr_score, shouldermob_score]
-        agg: mean
-        output_col: layer1_flexibility
+  flexibility:
+    label_key: "d.flexibility.label"
+    desc_key: "d.flexibility.desc"
+    child_metrics: ["straight_leg_raise", "shoulder_mobility"]
+    rollup:
+      input: "score"
+      method: "mean"
+      round: 1
+      score:
+        method: "round_clamp"
+        min: 1
+        max: 5
 
-      - key: balance
-        from: [baleyesopen_score]
-        agg: mean
-        output_col: layer1_balance
+  balance:
+    label_key: "d.balance.label"
+    desc_key: "d.balance.desc"
+    child_metrics: ["balance_eyes_open"]
+    rollup:
+      input: "score"
+      method: "mean"
+      round: 1
+      score:
+        method: "round_clamp"
+        min: 1
+        max: 5
 
+# Level 2 = higher-order constructs
+level2:
+  foundation:
+    label_key: "c.foundation.label"
+    desc_key: "c.foundation.desc"
+    child_metrics: ["strength", "flexibility", "balance"]
+    rollup:
+      input: "score"
+      method: "mean"
+      round: 1
+      score:
+        method: "round_clamp"
+        min: 1
+        max: 5
 
-  level2:
-    # Level 2 = capabilities computed from Level 1 composites
-    composites:
-      - key: foundation
-        from: [layer1_strength, layer1_flexibility, layer1_balance]
-        agg: mean
-        output_col: layer2_foundation
+  movement_skills:
+    label_key: "c.movement_skills.label"
+    desc_key: "c.movement_skills.desc"
+    child_metrics: ["power", "speed_agility"]
+    rollup:
+      input: "score"
+      method: "mean"
+      round: 1
+      score:
+        method: "round_clamp"
+        min: 1
+        max: 5
 
-      - key: movement_skills
-        from: [layer1_power, layer1_speed_agility]
-        agg: mean
-        output_col: layer2_movement_skills
+  # Interpretations / views of Level 2
+  views:
+    grid_2x2:
+      label_key: "c.level2.grid_2x2.label"
+      desc_key: "c.level2.grid_2x2.desc"
+
+      axes:
+        x:
+          metric: "foundation"
+          label_key: "c.foundation.label"
+        y:
+          metric: "movement_skills"
+          label_key: "c.movement_skills.label"
+
+      threshold:
+        high_min: 4   # >= 4 is High
+
+      quadrants:
+        foundation_low_movement_low:
+          label_key: "q.foundation_low_movement_low.label"
+          desc_key: "q.foundation_low_movement_low.desc"
+
+        foundation_high_movement_low:
+          label_key: "q.foundation_high_movement_low.label"
+          desc_key: "q.foundation_high_movement_low.desc"
+
+        foundation_low_movement_high:
+          label_key: "q.foundation_low_movement_high.label"
+          desc_key: "q.foundation_low_movement_high.desc"
+
+        foundation_high_movement_high:
+          label_key: "q.foundation_high_movement_high.label"
+          desc_key: "q.foundation_high_movement_high.desc"
+        
+level3:
+  overall:
+    label_key: "c.overall.label"
+    desc_key: "c.overall.desc"
+    child_metrics: ["strength", "power", "speed_agility", "flexibility", "balance"]
+    rollup:
+      input: "score"
+      method: "mean"
+      round: 1
+      score:
+        method: "round_clamp"
+        min: 1
+        max: 5
+
+i18n:
+  default_lang: "en"
+  lang_dir: "config/languages"
