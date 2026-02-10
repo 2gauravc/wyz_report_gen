@@ -12,7 +12,7 @@ import shutil
 import glob
 
 from pathlib import Path
-from utils.columns import find_column
+from utils.columns import apply_level0_value_columns, find_column
 from utils.dataframe import safe_numeric_col
 from utils.scoring import assign_scores
 from render.html import render_html_for_first_n 
@@ -78,9 +78,23 @@ def generate_csv(input_csv: str, output_csv: str, config_path:str) -> pd.DataFra
     if not report.ok():
         raise ValueError("Required columns missing; cannot continue.")
     
-    #Apply level 0 aggregates as defined in config (e.g. avg, p80, best)
+    # NEW: create canonical level0 value columns from dataset
+    from utils.columns import apply_level0_value_columns
+    from utils.metrics_derived import apply_level0_derived_metrics
+    work = apply_level0_value_columns(work, cfg)
+
+    # existing: derived metrics (straight_leg_raise, etc.)
+    work = apply_level0_derived_metrics(work, cfg)
+
+    # NOW aggregates will find the metric_id columns
     work = apply_level0_aggregates(work, cfg)
 
+    print(
+    "Derived metrics:",
+    [m for m in cfg["metrics"]["level0"] if m in work.columns]
+    )
+
+    
     # For now, just write raw + derived measurements
     work.to_csv(output_csv, index=False)
     return work

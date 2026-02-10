@@ -233,7 +233,7 @@ metrics:
       desc_key: "m.sbj.desc"
       unit: "m"
       input:
-        from_dataset: "sbj_m"
+        from_dataset: "sbj_cm"
       process:
         direction: "higher_is_better"
         group_by: ["gender", "grade"]

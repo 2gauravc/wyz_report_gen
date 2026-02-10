@@ -52,3 +52,27 @@ python school_report.py --csv out_csv/report_output.csv --out out_html/school_su
 |       **9** | Balance – Eyes Open             | `baleyesopen`  | Single-leg balance hold time in **seconds**     | Gender, Class (Grade)                     | Average, Best                           | **Fixed scale:** 1–6s→1, 7–12s→2, 13–18s→3, 19–24s→4, 25–30s→5 |
 
 ## Level 1 Metrics 
+
+# Code Flow 
+
+## Ingestion -> CSV Report Generation
+
+### Expected Output 
+
+The output creates a report with the following cols: 
+
+dataset: Entity Cols (6)
+srno,name,class,grade,section,gender,
+
+dataset: measurement cols (14)
+height_cm,weight_kg,slr_left,slr_right,smbt_cm,sprint_20m_sec,oh_mbp_60s_reps,shoulder_mobility_left,shoulder_mobility_right,sbj_cm,pro_agility_505_sec,chair_squat_60s_reps,balance_eo_left_sec,balance_eo_right_sec,
+
+dataset: derived attributes (1)
+bmi,
+
+metrics (level0) raw:9
+chair_squat_60s,oh_mbp_60s,standing_broad_jump,seated_medicine_ball_throw,sprint_20m,pro_agility_505,straight_leg_raise,shoulder_mobility,balance_eyes_open,
+
+metrics (level0) agg: 27
+chair_squat_60s_avg,chair_squat_60s_p80,chair_squat_60s_best,oh_mbp_60s_avg,oh_mbp_60s_p80,oh_mbp_60s_best,standing_broad_jump_avg,standing_broad_jump_p80,standing_broad_jump_best,seated_medicine_ball_throw_avg,seated_medicine_ball_throw_p80,seated_medicine_ball_throw_best,sprint_20m_avg,sprint_20m_p80,sprint_20m_best,pro_agility_505_avg,pro_agility_505_p80,pro_agility_505_best,straight_leg_raise_avg,straight_leg_raise_p80,straight_leg_raise_best,shoulder_mobility_avg,shoulder_mobility_p80,shoulder_mobility_best,balance_eyes_open_avg,balance_eyes_open_p80,balance_eyes_open_best
+
