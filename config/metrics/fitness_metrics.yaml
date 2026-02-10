@@ -119,11 +119,11 @@ dataset: #This section has raw/derived measurements; before scoring logic is app
       dtype: "number"
       validate: { min: 1, max: 3 }
 
-    smbt_m:
+    smbt_cm:
       col_name_patterns: ["smbt", "sittingmedicineballthrow", "seatedmedicineballthrow"]
       required: true
       dtype: "number"
-      validate: { min: 0.0, max: 20.0 }
+      validate: { min: 0.0, max: 2000 }
 
     sprint_20m_sec:
       col_name_patterns: ["speed20mbest", "runspeed", "20m", "sprint"]
@@ -149,11 +149,11 @@ dataset: #This section has raw/derived measurements; before scoring logic is app
       dtype: "number"
       validate: { min: 1, max: 3 }
 
-    sbj_m:
+    sbj_cm:
       col_name_patterns: ["sbj", "standingbroadjump"]
       required: true
       dtype: "number"
-      validate: { min: 0.0, max: 4.0 }
+      validate: { min: 0.0, max: 4000 }
 
     pro_agility_505_sec:
       col_name_patterns: ["proagility", "505", "5-0-5"]
@@ -186,119 +186,88 @@ dataset: #This section has raw/derived measurements; before scoring logic is app
     bmi:
       depends_on: ["height_cm", "weight_kg"]
       compute:
-        method: "bmi"
-        round: 1
-      validate:
-        min: 10
-        max: 40
-
-  derived_attributes:
-    bmi:
-      depends_on: ["height_cm", "weight_kg"]
-      compute:
         method: "bmi"           # your code implements this
         round: 1
       validate:
         min: 10
         max: 40
 
-
 metrics:
   level0:
-
     chair_squat_60s:
       label_key: "m.chair_squat_60s.label"
       desc_key: "m.chair_squat_60s.desc"
       unit: "reps"
       input:
-        col_name_patterns: ["squats", "chairsquat", "chairsquat60s"]
-        required: true
-        dtype: "number"
-      validate: { min: 0, max: 200 }
+        from_dataset: "chair_squat_60s_reps"
       process:
         direction: "higher_is_better"
         group_by: ["gender", "grade"]
         score:
           method: "quantile_bins"
           bins: 5
-          group_by: ["gender", "grade"]
         aggregates:
-          - { name: "avg", method: "mean", group_by: ["gender", "grade"] }
-          - { name: "p80", method: "percentile", q: 80, group_by: ["gender", "grade"] }
-          - { name: "best", method: "auto", group_by: ["gender", "grade"] }
+          - { name: "avg", method: "mean" }
+          - { name: "p80", method: "percentile", q: 80 }
+          - { name: "best", method: "auto" }
 
     oh_mbp_60s:
       label_key: "m.oh_mbp_60s.label"
       desc_key: "m.oh_mbp_60s.desc"
       unit: "reps"
       input:
-        col_name_patterns: ["ohmbp", "ohmbp60s"]
-        required: true
-        dtype: "number"
-      validate: { min: 0, max: 200 }
+        from_dataset: "oh_mbp_60s_reps"
       process:
         direction: "higher_is_better"
         group_by: ["gender", "grade"]
         score:
           method: "quantile_bins"
           bins: 5
-          group_by: ["gender", "grade"]
         aggregates:
-          - { name: "avg", method: "mean", group_by: ["gender", "grade"] }
-          - { name: "p80", method: "percentile", q: 80, group_by: ["gender", "grade"] }
-          - { name: "best", method: "auto", group_by: ["gender", "grade"] }
+          - { name: "avg", method: "mean" }
+          - { name: "p80", method: "percentile", q: 80 }
+          - { name: "best", method: "auto" }
 
     standing_broad_jump:
       label_key: "m.sbj.label"
       desc_key: "m.sbj.desc"
       unit: "m"
       input:
-        col_name_patterns: ["sbj", "standingbroadjump"]
-        required: true
-        dtype: "number"
-      validate: { min: 0.0, max: 4.0 }
+        from_dataset: "sbj_m"
       process:
         direction: "higher_is_better"
         group_by: ["gender", "grade"]
         score:
           method: "quantile_bins"
           bins: 5
-          group_by: ["gender", "grade"]
         aggregates:
-          - { name: "avg", method: "mean", group_by: ["gender", "grade"] }
-          - { name: "p80", method: "percentile", q: 80, group_by: ["gender", "grade"] }
-          - { name: "best", method: "auto", group_by: ["gender", "grade"] }
+          - { name: "avg", method: "mean" }
+          - { name: "p80", method: "percentile", q: 80 }
+          - { name: "best", method: "auto" }
 
     seated_medicine_ball_throw:
       label_key: "m.smbt.label"
       desc_key: "m.smbt.desc"
       unit: "m"
       input:
-        col_name_patterns: ["smbt", "seatedmedicineballthrow"]
-        required: true
-        dtype: "number"
-      validate: { min: 0.0, max: 20.0 }
+        from_dataset: "smbt_cm"
       process:
         direction: "higher_is_better"
         group_by: ["gender", "grade"]
         score:
           method: "quantile_bins"
           bins: 5
-          group_by: ["gender", "grade"]
         aggregates:
-          - { name: "avg", method: "mean", group_by: ["gender", "grade"] }
-          - { name: "p80", method: "percentile", q: 80, group_by: ["gender", "grade"] }
-          - { name: "best", method: "auto", group_by: ["gender", "grade"] }
+          - { name: "avg", method: "mean" }
+          - { name: "p80", method: "percentile", q: 80 }
+          - { name: "best", method: "auto" }
 
     sprint_20m:
       label_key: "m.sprint_20m.label"
       desc_key: "m.sprint_20m.desc"
       unit: "sec"
       input:
-        col_name_patterns: ["20m", "sprint", "runspeed", "run_speed"]
-        required: true
-        dtype: "number"
-      validate: { min: 2.0, max: 20.0 }
+        from_dataset: "sprint_20m_sec"
       process:
         direction: "lower_is_better"
         group_by: ["gender", "grade"]
@@ -306,21 +275,17 @@ metrics:
           method: "quantile_bins"
           bins: 5
           invert: true
-          group_by: ["gender", "grade"]
         aggregates:
-          - { name: "avg", method: "mean", group_by: ["gender", "grade"] }
-          - { name: "p80", method: "percentile", q: 80, group_by: ["gender", "grade"] }
-          - { name: "best", method: "auto", group_by: ["gender", "grade"] }
+          - { name: "avg", method: "mean" }
+          - { name: "p80", method: "percentile", q: 80 }
+          - { name: "best", method: "auto" }
 
     pro_agility_505:
       label_key: "m.pro_agility_505.label"
       desc_key: "m.pro_agility_505.desc"
       unit: "sec"
       input:
-        col_name_patterns: ["proagility", "505", "5-0-5", "agility"]
-        required: true
-        dtype: "number"
-      validate: { min: 2.0, max: 30.0 }
+        from_dataset: "pro_agility_505_sec"
       process:
         direction: "lower_is_better"
         group_by: ["gender", "grade"]
@@ -328,41 +293,18 @@ metrics:
           method: "quantile_bins"
           bins: 5
           invert: true
-          group_by: ["gender", "grade"]
         aggregates:
-          - { name: "avg", method: "mean", group_by: ["gender", "grade"] }
-          - { name: "p80", method: "percentile", q: 80, group_by: ["gender", "grade"] }
-          - { name: "best", method: "auto", group_by: ["gender", "grade"] }
-    # --- SLR inputs (raw) ---
-    straight_leg_raise_left:
-      label_key: "m.slr_left.label"
-      desc_key: "m.slr_left.desc"
-      unit: "score"
-      input:
-        col_name_patterns: ["slrleft", "straightlegraiseleft"]
-        required: true
-        dtype: "number"
-      validate: { min: 1, max: 3 }
+          - { name: "avg", method: "mean" }
+          - { name: "p80", method: "percentile", q: 80 }
+          - { name: "best", method: "auto" }
 
-    straight_leg_raise_right:
-      label_key: "m.slr_right.label"
-      desc_key: "m.slr_right.desc"
-      unit: "score"
-      input:
-        col_name_patterns: ["slright", "straightlegraiseright"]
-        required: true
-        dtype: "number"
-      validate: { min: 1, max: 3 }
-
-    # --- SLR reported metric (derived as min of left/right) ---
     straight_leg_raise:
       label_key: "m.slr.label"
       desc_key: "m.slr.desc"
       unit: "score"
       derived:
         method: "min"
-        inputs: ["straight_leg_raise_left", "straight_leg_raise_right"]
-      validate: { min: 1, max: 3 }
+        inputs_from_dataset: ["slr_left", "slr_right"]
       process:
         direction: "higher_is_better"
         group_by: ["gender", "grade"]
@@ -373,44 +315,38 @@ metrics:
             2: 3
             3: 5
         aggregates:
-          - { name: "avg", method: "mean", group_by: ["gender", "grade"] }
-          - { name: "p80", method: "percentile", q: 80, group_by: ["gender", "grade"] }
-          - { name: "best", method: "auto", group_by: ["gender", "grade"] }
-
+          - { name: "avg", method: "mean" }
+          - { name: "p80", method: "percentile", q: 80 }
+          - { name: "best", method: "auto" }
 
     shoulder_mobility:
       label_key: "m.shoulder_mobility.label"
       desc_key: "m.shoulder_mobility.desc"
-      unit: "score"   # or "cm"/"score" depending on capture
-      input:
-        col_name_patterns: ["shouldermob", "shoulder", "mobility"]
-        required: true
-        dtype: "number"
-      validate: { min: 0.0, max: 100.0 }  # adjust if your scale is 1-3
+      unit: "score"
+      derived:
+        method: "min"
+        inputs_from_dataset: ["shoulder_mobility_left", "shoulder_mobility_right"]
       process:
         direction: "higher_is_better"
         group_by: ["gender", "grade"]
         score:
           method: "fixed_map"
-          map: 
+          map:
             1: 1
             2: 3
             3: 5
-          group_by: ["gender", "grade"]
         aggregates:
-          - { name: "avg", method: "mean", group_by: ["gender", "grade"] }
-          - { name: "p80", method: "percentile", q: 80, group_by: ["gender", "grade"] }
-          - { name: "best", method: "auto", group_by: ["gender", "grade"] }
+          - { name: "avg", method: "mean" }
+          - { name: "p80", method: "percentile", q: 80 }
+          - { name: "best", method: "auto" }
 
     balance_eyes_open:
       label_key: "m.balance_eyes_open.label"
       desc_key: "m.balance_eyes_open.desc"
       unit: "sec"
-      input:
-        col_name_patterns: ["balance_eyes_open", "baleyesopen", "balance"]
-        required: true
-        dtype: "number"
-      validate: { min: 0, max: 30 }
+      derived:
+        method: "min"
+        inputs_from_dataset: ["balance_eo_left_sec", "balance_eo_right_sec"]
       process:
         direction: "higher_is_better"
         group_by: ["gender", "grade"]
@@ -423,154 +359,152 @@ metrics:
             - { min: 19, max: 23, score: 4 }
             - { min: 24, max: 30, score: 5 }
         aggregates:
-          - { name: "avg", method: "mean", group_by: ["gender", "grade"] }
-          - { name: "p80", method: "percentile", q: 80, group_by: ["gender", "grade"] }
-          - { name: "best", method: "auto", group_by: ["gender", "grade"] }
+          - { name: "avg", method: "mean" }
+          - { name: "p80", method: "percentile", q: 80 }
+          - { name: "best", method: "auto" }
 
-
-  # Level 1 = domains (strength, power, etc.) built from level0 scores
 # Level 1 = domains (strength, power, etc.) built from level0 scores
-level1:
-  strength:
-    label_key: "d.strength.label"
-    desc_key: "d.strength.desc"
-    child_metrics: ["chair_squat_60s", "oh_mbp_60s"]
-    rollup:
-      input: "score"
-      method: "mean"
-      round: 1
-      score:
-        method: "round_clamp"
-        min: 1
-        max: 5
+  level1:
+    strength:
+      label_key: "d.strength.label"
+      desc_key: "d.strength.desc"
+      child_metrics: ["chair_squat_60s", "oh_mbp_60s"]
+      rollup:
+        input: "score"
+        method: "mean"
+        round: 1
+        score:
+          method: "round_clamp"
+          min: 1
+          max: 5
 
-  power:
-    label_key: "d.power.label"
-    desc_key: "d.power.desc"
-    child_metrics: ["standing_broad_jump", "seated_medicine_ball_throw"]
-    rollup:
-      input: "score"
-      method: "mean"
-      round: 1
-      score:
-        method: "round_clamp"
-        min: 1
-        max: 5
+    power:
+      label_key: "d.power.label"
+      desc_key: "d.power.desc"
+      child_metrics: ["standing_broad_jump", "seated_medicine_ball_throw"]
+      rollup:
+        input: "score"
+        method: "mean"
+        round: 1
+        score:
+          method: "round_clamp"
+          min: 1
+          max: 5
 
-  speed_agility:
-    label_key: "d.speed_agility.label"
-    desc_key: "d.speed_agility.desc"
-    child_metrics: ["sprint_20m", "pro_agility_505"]
-    rollup:
-      input: "score"
-      method: "mean"
-      round: 1
-      score:
-        method: "round_clamp"
-        min: 1
-        max: 5
+    speed_agility:
+      label_key: "d.speed_agility.label"
+      desc_key: "d.speed_agility.desc"
+      child_metrics: ["sprint_20m", "pro_agility_505"]
+      rollup:
+        input: "score"
+        method: "mean"
+        round: 1
+        score:
+          method: "round_clamp"
+          min: 1
+          max: 5
 
-  flexibility:
-    label_key: "d.flexibility.label"
-    desc_key: "d.flexibility.desc"
-    child_metrics: ["straight_leg_raise", "shoulder_mobility"]
-    rollup:
-      input: "score"
-      method: "mean"
-      round: 1
-      score:
-        method: "round_clamp"
-        min: 1
-        max: 5
+    flexibility:
+      label_key: "d.flexibility.label"
+      desc_key: "d.flexibility.desc"
+      child_metrics: ["straight_leg_raise", "shoulder_mobility"]
+      rollup:
+        input: "score"
+        method: "mean"
+        round: 1
+        score:
+          method: "round_clamp"
+          min: 1
+          max: 5
 
-  balance:
-    label_key: "d.balance.label"
-    desc_key: "d.balance.desc"
-    child_metrics: ["balance_eyes_open"]
-    rollup:
-      input: "score"
-      method: "mean"
-      round: 1
-      score:
-        method: "round_clamp"
-        min: 1
-        max: 5
+    balance:
+      label_key: "d.balance.label"
+      desc_key: "d.balance.desc"
+      child_metrics: ["balance_eyes_open"]
+      rollup:
+        input: "score"
+        method: "mean"
+        round: 1
+        score:
+          method: "round_clamp"
+          min: 1
+          max: 5
 
 # Level 2 = higher-order constructs
-level2:
-  foundation:
-    label_key: "c.foundation.label"
-    desc_key: "c.foundation.desc"
-    child_metrics: ["strength", "flexibility", "balance"]
-    rollup:
-      input: "score"
-      method: "mean"
-      round: 1
-      score:
-        method: "round_clamp"
-        min: 1
-        max: 5
+  level2:
+    foundation:
+      label_key: "c.foundation.label"
+      desc_key: "c.foundation.desc"
+      child_metrics: ["strength", "flexibility", "balance"]
+      rollup:
+        input: "score"
+        method: "mean"
+        round: 1
+        score:
+          method: "round_clamp"
+          min: 1
+          max: 5
 
-  movement_skills:
-    label_key: "c.movement_skills.label"
-    desc_key: "c.movement_skills.desc"
-    child_metrics: ["power", "speed_agility"]
-    rollup:
-      input: "score"
-      method: "mean"
-      round: 1
-      score:
-        method: "round_clamp"
-        min: 1
-        max: 5
+    movement_skills:
+      label_key: "c.movement_skills.label"
+      desc_key: "c.movement_skills.desc"
+      child_metrics: ["power", "speed_agility"]
+      rollup:
+        input: "score"
+        method: "mean"
+        round: 1
+        score:
+          method: "round_clamp"
+          min: 1
+          max: 5
 
-  # Interpretations / views of Level 2
-  views:
-    grid_2x2:
-      label_key: "c.level2.grid_2x2.label"
-      desc_key: "c.level2.grid_2x2.desc"
+    # Interpretations / views of Level 2
+    views:
+      grid_2x2:
+        label_key: "c.level2.grid_2x2.label"
+        desc_key: "c.level2.grid_2x2.desc"
 
-      axes:
-        x:
-          metric: "foundation"
-          label_key: "c.foundation.label"
-        y:
-          metric: "movement_skills"
-          label_key: "c.movement_skills.label"
+        axes:
+          x:
+            metric: "foundation"
+            label_key: "c.foundation.label"
+          y:
+            metric: "movement_skills"
+            label_key: "c.movement_skills.label"
 
-      threshold:
-        high_min: 4   # >= 4 is High
+        threshold:
+          high_min: 4   # >= 4 is High
 
-      quadrants:
-        foundation_low_movement_low:
-          label_key: "q.foundation_low_movement_low.label"
-          desc_key: "q.foundation_low_movement_low.desc"
+        quadrants:
+          foundation_low_movement_low:
+            label_key: "q.foundation_low_movement_low.label"
+            desc_key: "q.foundation_low_movement_low.desc"
 
-        foundation_high_movement_low:
-          label_key: "q.foundation_high_movement_low.label"
-          desc_key: "q.foundation_high_movement_low.desc"
+          foundation_high_movement_low:
+            label_key: "q.foundation_high_movement_low.label"
+            desc_key: "q.foundation_high_movement_low.desc"
 
-        foundation_low_movement_high:
-          label_key: "q.foundation_low_movement_high.label"
-          desc_key: "q.foundation_low_movement_high.desc"
+          foundation_low_movement_high:
+            label_key: "q.foundation_low_movement_high.label"
+            desc_key: "q.foundation_low_movement_high.desc"
 
-        foundation_high_movement_high:
-          label_key: "q.foundation_high_movement_high.label"
-          desc_key: "q.foundation_high_movement_high.desc"
+          foundation_high_movement_high:
+            label_key: "q.foundation_high_movement_high.label"
+            desc_key: "q.foundation_high_movement_high.desc"
         
-level3:
-  overall:
-    label_key: "c.overall.label"
-    desc_key: "c.overall.desc"
-    child_metrics: ["strength", "power", "speed_agility", "flexibility", "balance"]
-    rollup:
-      input: "score"
-      method: "mean"
-      round: 1
-      score:
-        method: "round_clamp"
-        min: 1
-        max: 5
+  level3:
+    overall:
+      label_key: "c.overall.label"
+      desc_key: "c.overall.desc"
+      child_metrics: ["strength", "power", "speed_agility", "flexibility", "balance"]
+      rollup:
+        input: "score"
+        method: "mean"
+        round: 1
+        score:
+          method: "round_clamp"
+          min: 1
+          max: 5
 
 i18n:
   default_lang: "en"

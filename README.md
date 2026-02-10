@@ -23,8 +23,8 @@ python3 src/student_report.py data/input_data/master_6th_class.csv -o output/out
 
 Only generate CSV. do not render HTMl and PDF 
 ```
-python3 student_report.py input_data/master_6th_class.csv \
-  -o out_csv/report_output.csv
+python3 src/student_report.py data/input_data/master_6th_class.csv \
+-o output/out_csv/report_output.csv --config config/metrics/fitness_metrics.yaml
 
 ```
 
