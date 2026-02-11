@@ -25,6 +25,14 @@ from utils.dataset_validate import (
     print_validation_report,
 )
 from utils.aggregates import apply_level0_aggregates
+from utils.metrics_scoring import apply_level0_scores
+from utils.metrics_rollups import apply_level1_rollups
+from utils.metrics_rollups import (
+    apply_level1_rollups,
+    apply_level2_rollups,
+    apply_level2_views,
+    apply_level3_rollups,
+)
 
 def add_group_stats(
     df,
@@ -89,14 +97,22 @@ def generate_csv(input_csv: str, output_csv: str, config_path:str) -> pd.DataFra
     # NOW aggregates will find the metric_id columns
     work = apply_level0_aggregates(work, cfg)
 
-    print(
-    "Derived metrics:",
-    [m for m in cfg["metrics"]["level0"] if m in work.columns]
-    )
+    # Scoring 
+    work = apply_level0_scores(work, cfg)
 
+    # then:
+    work = apply_level1_rollups(work, cfg)
+    
+    # level2 + views
+    work = apply_level2_rollups(work, cfg)
+    work = apply_level2_views(work, cfg)
+
+    # level3
+    work = apply_level3_rollups(work, cfg)
     
     # For now, just write raw + derived measurements
     work.to_csv(output_csv, index=False)
+    
     return work
 
 def main(argv: Optional[list] = None):
