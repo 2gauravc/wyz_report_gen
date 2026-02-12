@@ -140,9 +140,9 @@ def main(argv: Optional[list] = None):
     try:
         df_out = generate_csv(args.input, args.output, args.config)
         print(f"Wrote report to {args.output}")
-        #if args.render_html:
-        #    render_html_for_first_n(df_out, args.template, args.html_outdir, args.limit)
-        #    print(f"Rendered HTML reports to {args.html_outdir}")
+        if args.render_html:
+            render_html_for_first_n(df_out, args.template, args.html_outdir, args.config, args.limit)
+            print(f"Rendered HTML reports to {args.html_outdir}")
         #if args.to_pdf:
         #    # convert HTML files in outdir to PDF using wkhtmltopdf
         #    try:

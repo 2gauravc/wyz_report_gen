@@ -229,8 +229,3 @@ This now gives your README:
 
 ---
 
-If you want, I can now write a one-page conceptual explanation titled:
-
-> "Why Foundation and Movement Skills Are Separated"
-
-which will fit beautifully into your cover page design.
