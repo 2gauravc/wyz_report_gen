@@ -24,15 +24,19 @@ from utils.dataset_validate import (
     validate_values_basic,
     print_validation_report,
 )
+from utils.columns import apply_level0_value_columns
+from utils.metrics_derived import apply_level0_derived_metrics
+
 from utils.aggregates import apply_level0_aggregates
 from utils.metrics_scoring import apply_level0_scores
-from utils.metrics_rollups import apply_level1_rollups
 from utils.metrics_rollups import (
     apply_level1_rollups,
     apply_level2_rollups,
     apply_level2_views,
     apply_level3_rollups,
 )
+from utils.aggregates import apply_all_aggregates
+
 
 def add_group_stats(
     df,
@@ -87,31 +91,34 @@ def generate_csv(input_csv: str, output_csv: str, config_path:str) -> pd.DataFra
         raise ValueError("Required columns missing; cannot continue.")
     
     # NEW: create canonical level0 value columns from dataset
-    from utils.columns import apply_level0_value_columns
-    from utils.metrics_derived import apply_level0_derived_metrics
+    
     work = apply_level0_value_columns(work, cfg)
 
     # existing: derived metrics (straight_leg_raise, etc.)
     work = apply_level0_derived_metrics(work, cfg)
 
-    # NOW aggregates will find the metric_id columns
-    work = apply_level0_aggregates(work, cfg)
-
-    # Scoring 
+    # Scoring
     work = apply_level0_scores(work, cfg)
 
-    # then:
+    # Rollups
     work = apply_level1_rollups(work, cfg)
-    
-    # level2 + views
     work = apply_level2_rollups(work, cfg)
     work = apply_level2_views(work, cfg)
-
-    # level3
     work = apply_level3_rollups(work, cfg)
+
+    # Total fitness score
+    level0_ids = list(cfg["metrics"]["level0"].keys())
+    score_cols = [f"{m}_score" for m in level0_ids if f"{m}_score" in work.columns]
+    work["fitnessscore"] = work[score_cols].sum(axis=1, min_count=1).astype("Int64")
+    work["maxfitnessscore"] = len(score_cols) * 5
     
+    # ✅ Aggregates (Level0 + Level1 + Level2 + Level3, depending on YAML)
+    work = apply_all_aggregates(work, cfg)
+    
+    print("Final columns:", list(work.columns))
     # For now, just write raw + derived measurements
     work.to_csv(output_csv, index=False)
+
     
     return work
 

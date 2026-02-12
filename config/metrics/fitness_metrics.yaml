@@ -377,6 +377,13 @@ metrics:
           method: "round_clamp"
           min: 1
           max: 5
+      process:
+        input: "score"
+        group_by: ["gender", "grade"]
+        aggregates:
+          - { name: "avg",  method: "mean",       group_by: ["gender", "grade"] }
+          - { name: "p80",  method: "percentile", q: 80,   group_by: ["gender", "grade"] }
+          - { name: "best", method: "auto",       group_by: ["gender", "grade"] }
 
     power:
       label_key: "d.power.label"
@@ -390,6 +397,13 @@ metrics:
           method: "round_clamp"
           min: 1
           max: 5
+      process:
+        input: "score"
+        group_by: ["gender", "grade"]
+        aggregates:
+          - { name: "avg",  method: "mean",       group_by: ["gender", "grade"] }
+          - { name: "p80",  method: "percentile", q: 80,   group_by: ["gender", "grade"] }
+          - { name: "best", method: "auto",       group_by: ["gender", "grade"] }
 
     speed_agility:
       label_key: "d.speed_agility.label"
@@ -403,6 +417,13 @@ metrics:
           method: "round_clamp"
           min: 1
           max: 5
+      process:
+        input: "score"
+        group_by: ["gender", "grade"]
+        aggregates:
+          - { name: "avg",  method: "mean",       group_by: ["gender", "grade"] }
+          - { name: "p80",  method: "percentile", q: 80,   group_by: ["gender", "grade"] }
+          - { name: "best", method: "auto",       group_by: ["gender", "grade"] }
 
     flexibility:
       label_key: "d.flexibility.label"
@@ -416,6 +437,13 @@ metrics:
           method: "round_clamp"
           min: 1
           max: 5
+      process:
+        input: "score"
+        group_by: ["gender", "grade"]
+        aggregates:
+          - { name: "avg",  method: "mean",       group_by: ["gender", "grade"] }
+          - { name: "p80",  method: "percentile", q: 80,   group_by: ["gender", "grade"] }
+          - { name: "best", method: "auto",       group_by: ["gender", "grade"] }
 
     balance:
       label_key: "d.balance.label"
@@ -429,8 +457,15 @@ metrics:
           method: "round_clamp"
           min: 1
           max: 5
+      process:
+        input: "score"
+        group_by: ["gender", "grade"]
+        aggregates:
+          - { name: "avg",  method: "mean",       group_by: ["gender", "grade"] }
+          - { name: "p80",  method: "percentile", q: 80,   group_by: ["gender", "grade"] }
+          - { name: "best", method: "auto",       group_by: ["gender", "grade"] }
 
-# Level 2 = higher-order constructs
+  # Level 2 = higher-order constructs
   level2:
     foundation:
       label_key: "c.foundation.label"
@@ -491,7 +526,7 @@ metrics:
           foundation_high_movement_high:
             label_key: "q.foundation_high_movement_high.label"
             desc_key: "q.foundation_high_movement_high.desc"
-        
+          
   level3:
     overall:
       label_key: "c.overall.label"
