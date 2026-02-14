@@ -1,0 +1,37 @@
+run:
+  label: "Term 1 Fitness Test"
+  test_date: "2026-02-13"
+  generated_on: "auto"         # or omit and set in code
+
+school:
+  name: "St Dominic Savio School"
+  code: "STDOMSCH"
+  logo_path: "assets/stdomlogo.png"
+
+input_data: 
+  file: "data/input_data/master_6th_class.csv"
+
+report_title:
+  title: "Individual Fitness Testing & Assessment"
+  subtitle: "Term 1 Fitness Test"
+
+metrics: 
+  metrics_config_yaml: "config/fitness_metrics_config.yaml"
+
+templates:
+  student: "templates/student_report_2page.html"
+  school: "templates/school_report_template.html"
+
+i18n:
+  lang: "en"
+  lang_dir: "config/languages"
+
+outputs:
+  write_csv: true
+  render_html: true
+  to_pdf: true
+  limit: 10 # null means run all 
+  html_outdir: "output/out_html"
+  pdf_outdir: "output/out_pdf"
+  csv_outdir: "output/out_csv"
+  overwrite: true

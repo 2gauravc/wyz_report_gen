@@ -1,0 +1,4 @@
+pdf:
+  page_size: "A4"
+  engine: "wkhtmltopdf"
+  wkhtmltopdf_path: "wkhtmltopdf"   # or absolute path if needed

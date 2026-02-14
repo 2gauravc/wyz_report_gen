@@ -5,13 +5,9 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
-import os
-import jinja2
-import subprocess
-import shutil
-import glob
 
-from pathlib import Path
+from utils.paths import resolve_repo
+from utils.filenames import generate_report_filename
 from utils.columns import apply_level0_value_columns, find_column
 from utils.dataframe import safe_numeric_col
 from utils.scoring import assign_scores
@@ -115,7 +111,7 @@ def generate_csv(input_csv: str, output_csv: str, config_path:str) -> pd.DataFra
     # ✅ Aggregates (Level0 + Level1 + Level2 + Level3, depending on YAML)
     work = apply_all_aggregates(work, cfg)
     
-    print("Final columns:", list(work.columns))
+    print("Number of Columns in CSV generated:", len(work.columns))
     # For now, just write raw + derived measurements
     work.to_csv(output_csv, index=False)
 
@@ -123,35 +119,46 @@ def generate_csv(input_csv: str, output_csv: str, config_path:str) -> pd.DataFra
     return work
 
 def main(argv: Optional[list] = None):
-    parser = argparse.ArgumentParser(description='Generate ChairSquats1min report per student.')
-    parser.add_argument('input', nargs='?', default='input_data/master_6th_class.csv', help='Input CSV file')
-    parser.add_argument('-o', '--output', default='out_csv/report_output.csv', help='Output CSV file')
-    parser.add_argument('--render-html', action='store_true', help='Render HTML reports for first N students using template')
-    parser.add_argument('--template', default='report_template.html', help='HTML template path')
-    parser.add_argument('--html-outdir', default='out_html', help='Output directory for generated HTML files')
-    parser.add_argument('--pdf-outdir', default='out_pdf', help='Output directory for generated PDF files')
-    parser.add_argument('--to-pdf', action='store_true', help='Convert generated HTML reports to PDF using wkhtmltopdf')
-    parser.add_argument('--limit', type=int, default=10, help='Number of students to render')
-    parser.add_argument('--config', default='config/metrics/fitness_metrics.yaml', help='YAML config file')
-
-
+    parser = argparse.ArgumentParser(
+    description='Generate WYRDZ Fitness student reports.')
+    parser.add_argument(
+        '--run-config',
+        default='config/report_run_config.yaml',
+        help='Run configuration file')
+    parser.add_argument(
+    '--app-config',
+    default='config/app_config.yaml',
+    help='Application configuration (PDF engine, system settings)')
+    
     args = parser.parse_args(argv)
+    run_cfg = load_yaml_config(args.run_config)
+    input_csv_file = resolve_repo(run_cfg["input_data"]["file"])
+    metrics_yaml_file = resolve_repo(run_cfg["metrics"]["metrics_config_yaml"])
+    output_csv_path = resolve_repo(run_cfg["outputs"]["csv_outdir"])
+    output_csv_file = generate_report_filename(output_csv_path, "report_output", ".csv")
+    outputs = run_cfg.get("outputs", {})
+    is_render_html = outputs.get("render_html", False)
+    is_to_pdf = outputs.get("to_pdf", False)
+
+    html_outdir = resolve_repo(run_cfg["outputs"]["html_outdir"])
+    pdf_outdir = resolve_repo(run_cfg["outputs"]["pdf_outdir"])
+    html_template = run_cfg["templates"]["student"]
+    limit = run_cfg["outputs"]["limit"]
+    
+    app_cfg = load_yaml_config(args.app_config)
 
     try:
-        df_out = generate_csv(args.input, args.output, args.config)
-        print(f"Wrote report to {args.output}")
-        if args.render_html:
-            render_html_for_first_n(df_out, args.template, args.html_outdir, args.config, args.limit)
-            print(f"Rendered HTML reports to {args.html_outdir}")
-        #if args.to_pdf:
-        #    # convert HTML files in outdir to PDF using wkhtmltopdf
-        #    try:
-        #        convert_htmls_to_pdfs(args.html_outdir, args.pdf_outdir)
-        #    except FileNotFoundError as e:
-        #        print(str(e), file=sys.stderr)
-        #        sys.exit(3)
+        df_out = generate_csv(input_csv_file, output_csv_file, metrics_yaml_file)
+        print(f"Wrote report to {output_csv_file}")
+        if is_render_html:
+            render_html_for_first_n(df_out, html_template, html_outdir, metrics_yaml_file, limit)
+            print(f"Rendered HTML reports to {html_outdir}")
+        if is_to_pdf:
+            # convert HTML files in outdir to PDF using wkhtmltopdf
+            convert_htmls_to_pdfs(html_outdir, pdf_outdir)
+        
     except FileNotFoundError:
-        print(f"Input file not found: {args.input}", file=sys.stderr)
+        print("error in try")
         sys.exit(2)
 
 

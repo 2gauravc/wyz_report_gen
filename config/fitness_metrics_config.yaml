@@ -1,30 +1,3 @@
-version: 1
-report_context:
-  school_name:
-    source: "static"          # static | env | cli | csv | derived
-    default: "WYRDZ School"
-    label_key: "ctx.school_name.label"
-
-  logos:
-    platform:
-      label_key: "ctx.logo.platform"
-      source: "repo_asset"
-      path: "assets/images/wyrz_logo.svg"
-      position: "left"      # left | right | center
-      required: true
-
-    school:
-      label_key: "ctx.logo.school"
-      source: "cli_or_config"
-      default: null
-      position: "right"
-      required: false
-  
-  report_title:
-    source: "static"
-    default: "Individual Fitness Testing & Assessment"
-    label_key: "ctx.report_title.label"
-
 dataset: #This section has raw/derived measurements; before scoring logic is applied. 
   # -------------------------------------------------
   # A. Entity columns (identity & grouping)
@@ -541,6 +514,4 @@ metrics:
           min: 1
           max: 5
 
-i18n:
-  default_lang: "en"
-  lang_dir: "config/languages"
+

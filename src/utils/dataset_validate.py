@@ -100,21 +100,43 @@ def validate_values_basic(work: pd.DataFrame, cfg: dict, report: ValidationRepor
     return report
 
 def print_validation_report(report: ValidationReport) -> None:
+    has_issues = False
+
+    # 1️⃣ Required columns
     if report.missing_required:
+        has_issues = True
         print("❌ Missing REQUIRED columns:", ", ".join(report.missing_required))
     else:
         print("✅ No missing required columns")
 
+    # 2️⃣ Optional columns
     if report.missing_optional:
+        has_issues = True
         print("⚠️ Missing optional columns:", ", ".join(report.missing_optional))
+    else:
+        print("✅ All optional columns present")
 
+    # 3️⃣ High NaN
     if report.high_nan_numeric:
+        has_issues = True
         print("⚠️ High NaN after numeric coercion (>30%):")
         for field, nan_count, total, frac in report.high_nan_numeric:
             pct = round(frac * 100, 1)
             print(f"   - {field}: {nan_count}/{total} NaN ({pct}%)")
+    else:
+        print("✅ No excessive NaN values after numeric coercion")
 
+    # 4️⃣ Out-of-range
     if report.out_of_range:
+        has_issues = True
         print("⚠️ Out-of-range values:")
         for field, mn, mx, bad_count in report.out_of_range:
             print(f"   - {field}: {bad_count} rows outside [{mn}, {mx}]")
+    else:
+        print("✅ No out-of-range values detected")
+
+    # 🎯 Final summary
+    if not has_issues:
+        print("\n🎉 All data validation checks passed successfully.\n")
+    else:
+        print("\n⚠️ Validation completed with warnings. Please review above.\n")
