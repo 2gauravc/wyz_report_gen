@@ -20,6 +20,63 @@
     .grid-2col { display:flex; gap:12px; }
     .col { flex:1; }
 
+    .grid-2col.adm-row { 
+      display: flex; 
+      gap: 96px; 
+      flex-wrap: nowrap;      /* IMPORTANT: prevent dropping below */
+      align-items: flex-start;
+    }
+
+    .grid-2col.adm-row .adm-grid { 
+      flex: 0 0 60%; 
+      max-width: 60%;
+      min-width: 0;           /* IMPORTANT: allow flex item to shrink */
+    }
+
+    .grid-2col.adm-row .adm-side { 
+      flex: 0 0 40%; 
+      max-width: 40%;
+      min-width: 0;           /* IMPORTANT */
+    }
+    
+    .adm-side {
+    border: 2px solid #000;
+    padding: 16px;
+    box-sizing: border-box;
+    }
+    .adm-side-title {
+      font-weight: 800;
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+    .adm-metric-line {
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .adm-side{
+      line-height: 1.5;
+    }
+    .adm-side{
+      margin-top: 12px;   /* tweak 28–40px to match your quad-title height */
+    }
+
+    .adm-metric-line,
+    .adm-belongs,
+    .adm-note{
+      margin-bottom: 10px;
+    }
+    
+    .adm-belongs-label{
+      font-weight: 700;
+    }
+    .adm-belongs-value{
+      font-weight: 900;
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+
     .kv { width:100%; border-collapse:collapse; }
     .kv td { border:1px solid #000; padding:8px; vertical-align:middle; }
     .k { width:170px; font-weight:700; }
@@ -29,12 +86,63 @@
     .small-note { font-style:italic; margin-top:6px; font-size:12px; }
 
     /* Cover: 2x2 grid */
-    .quad-wrap { border:2px solid #000; padding:10px; }
-    .quad-title { font-weight:700; margin-bottom:6px; }
-    .quad { width:100%; border-collapse:collapse; table-layout:fixed; }
-    .quad td { border:1px solid #000; padding:10px; height:70px; vertical-align:middle; font-size:12px; }
-    .quad .axis { font-weight:700; background:#f6f7f9; }
-    .active { outline: 3px solid #000; font-weight:700; }
+    table.quad2x2{
+      width: 100%;
+      border-collapse: collapse;
+      border: 2px solid #000;
+      margin-top: 10px;
+      table-layout: fixed; /* prevents weird resizing in PDF */
+    }
+
+    table.quad2x2 td{
+      border: 1px solid #000;
+      vertical-align: middle;
+    }
+
+    table.quad2x2 td.yaxis{
+      width: 52px;
+      background: #fff;
+      position: relative;
+    }
+
+    .yaxis-text{
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-90deg);
+      white-space: nowrap;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    table.quad2x2 td.cell{
+      padding: 14px;
+      height: 120px;          /* forces 2×2 shape */
+      vertical-align: middle;
+    }
+
+    table.quad2x2 td.cell .main{
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    table.quad2x2 td.cell .sub{
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    table.quad2x2 td.cell.active{
+      border: 4px solid #000; /* highlight student quadrant */
+    }
+
+    .x-axis-label{
+      margin-left: 58px; /* aligns under grid (≈ y-axis cell width) */
+      margin-top: 8px;
+      font-weight: 700;
+      font-size: 14px;
+    }
 
     /* Snapshot table */
     .snap { width:100%; border-collapse:collapse; }
@@ -91,51 +199,85 @@
     </div>
 
     <div class="card">
-      <div class="section-title">FOUNDATION vs MOVEMENT SKILLS (2×2)</div>
+      <div class="section-title">Athletic Development Matrix</div>
+
       <div class="small-note">
         <b>Foundation</b> = Strength + Flexibility + Balance. &nbsp;
         <b>Movement Skills</b> = Power + Speed &amp; Agility. &nbsp;
         High = score ≥ 4.
       </div>
 
-      <div class="grid-2col" style="margin-top:10px;">
-        <div class="col quad-wrap">
-          <div class="quad-title">
-            X: Foundation Score = <b>{{ foundation_score }}</b> &nbsp; | &nbsp;
-            Y: Movement Skills Score = <b>{{ movement_skills_score }}</b>
-          </div>
+      <div class="grid-2col adm-row">
 
-          <table class="quad">
+        <!-- LEFT: 2x2 grid (60% width) -->
+        <div class="col adm-grid">
+          <table class="quad2x2">
             <tr>
-              <td class="axis" style="width:18%;">Y ↑</td>
-              <td class="axis">Movement High (≥4)</td>
-              <td class="axis">Movement Low (&lt;4)</td>
-            </tr>
-            <tr>
-              <td class="axis">X →</td>
-              <td class="{% if level2_grid_2x2 == 'foundation_high_movement_high' %}active{% endif %}">
-                Foundation High<br/>Movement High
+              <td class="yaxis" rowspan="2">
+                <div class="yaxis-text">Movement Skills ↑</div>
               </td>
-              <td class="{% if level2_grid_2x2 == 'foundation_high_movement_low' %}active{% endif %}">
-                Foundation High<br/>Movement Low
+
+              <td class="cell {% if level2_grid_2x2 == 'foundation_high_movement_high' %}active{% endif %}">
+                <div class="main">Athlete</div>
+                <div class="sub">Foundation High<br/>Movement High</div>
               </td>
-            </tr>
-            <tr>
-              <td class="axis"></td>
-              <td class="{% if level2_grid_2x2 == 'foundation_low_movement_high' %}active{% endif %}">
-                Foundation Low<br/>Movement High
-              </td>
-              <td class="{% if level2_grid_2x2 == 'foundation_low_movement_low' %}active{% endif %}">
-                Foundation Low<br/>Movement Low
+
+              <td class="cell {% if level2_grid_2x2 == 'foundation_high_movement_low' %}active{% endif %}">
+                <div class="main">Strong but Slow</div>
+                <div class="sub">Foundation High<br/>Movement Low</div>
               </td>
             </tr>
+
             <tr>
-              <td class="axis"></td>
-              <td class="axis">Foundation Low (&lt;4)</td>
-              <td class="axis">Foundation High (≥4)</td>
+              <td class="cell {% if level2_grid_2x2 == 'foundation_low_movement_high' %}active{% endif %}">
+                <div class="main">Fast but Fragile</div>
+                <div class="sub">Foundation Low<br/>Movement High</div>
+              </td>
+
+              <td class="cell {% if level2_grid_2x2 == 'foundation_low_movement_low' %}active{% endif %}">
+                <div class="main">Developing</div>
+                <div class="sub">Foundation Low<br/>Movement Low</div>
+              </td>
             </tr>
           </table>
+
+          <div class="x-axis-label">Foundation →</div>
         </div>
+
+        <!-- RIGHT: score summary box -->
+        <div class="col adm-side">
+          <div class="adm-side-title">Student Summary</div>
+
+          <div class="adm-metric-line">
+            <b>Foundation Score:</b> {{ foundation_score }}
+          </div>
+
+          <div class="adm-metric-line">
+            <b>Movement Skills Score:</b> {{ movement_skills_score }}
+          </div>
+
+          <div class="adm-belongs">
+            <div class="adm-belongs-label">Student quadrant:</div>
+
+            {% if level2_grid_2x2 == 'foundation_high_movement_high' %}
+              <div class="adm-belongs-value">Athlete</div>
+            {% elif level2_grid_2x2 == 'foundation_high_movement_low' %}
+              <div class="adm-belongs-value">Strong but Slow</div>
+            {% elif level2_grid_2x2 == 'foundation_low_movement_high' %}
+              <div class="adm-belongs-value">Fast but Fragile</div>
+            {% else %}
+              <div class="adm-belongs-value">Developing</div>
+            {% endif %}
+          </div>
+
+          <div class="adm-note">
+            This quadrant reflects the balance between physical foundation and movement skills.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
 
         <div class="col">
           <div class="section-title">COMPONENT SNAPSHOT</div>
